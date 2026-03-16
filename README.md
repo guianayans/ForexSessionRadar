@@ -3,7 +3,7 @@
 
 Aplicativo desktop para monitoramento operacional de sessoes Forex, overlap, alertas e assistente inteligente local/OpenAI.
 
-![Forex Session Radar Dashboard](./dashboard.png)
+![Forex Session Radar Dashboard](./dashboard.png) 
 
 ## Visao Geral
 
