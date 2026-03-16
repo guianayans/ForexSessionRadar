@@ -1,0 +1,34 @@
+{
+  "preferences": {
+    "baseTimezone": "America/Sao_Paulo",
+    "alertLeadMinutes": 15,
+    "alertOnSessionOpen": true,
+    "alertOnOverlapStart": true,
+    "alertOnIdealWindowEnd": true
+  },
+  "planner": {
+    "checklist": [
+      {
+        "id": "support",
+        "label": "Revisar niveis de suporte e resistencia",
+        "done": false
+      },
+      {
+        "id": "calendar",
+        "label": "Conferir calendario economico",
+        "done": false
+      },
+      {
+        "id": "risk",
+        "label": "Confirmar risco maximo por trade",
+        "done": false
+      }
+    ],
+    "favorites": [
+      "EUR/USD",
+      "XAUUSD"
+    ],
+    "notes": "",
+    "lockoutEnabled": false
+  }
+}

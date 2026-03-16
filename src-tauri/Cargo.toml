@@ -1,0 +1,20 @@
+[package]
+name = "forex-session-radar"
+version = "0.1.0"
+description = "Forex Session Radar desktop app"
+authors = ["Forex Radar"]
+license = "MIT"
+repository = ""
+edition = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+serde_json = "1"
+tauri = { version = "1.6", features = [ "notification-all"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

@@ -1,0 +1,25 @@
+{
+  "name": "forex-session-radar",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "tauri dev",
+    "dev:web": "concurrently -k -n BACKEND,FRONTEND -c cyan,magenta \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "dev:backend": "npm --workspace backend run dev",
+    "build": "tauri build",
+    "build:stack": "npm run build:frontend && npm run build:backend && npm run build:sidecar",
+    "build:frontend": "npm --workspace frontend run build",
+    "build:backend": "npm --workspace backend run build",
+    "build:sidecar": "npm --workspace backend run build:sidecar",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.6.3",
+    "concurrently": "^9.1.2"
+  }
+}

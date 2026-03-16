@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 219 52% 7%;
+  --foreground: 220 25% 94%;
+  --card: 218 47% 11%;
+  --card-foreground: 220 28% 93%;
+  --border: 214 32% 26%;
+  --primary: 191 100% 56%;
+  --primary-foreground: 218 58% 8%;
+  --muted: 217 30% 17%;
+  --muted-foreground: 215 16% 70%;
+  --accent: 46 100% 56%;
+  --accent-foreground: 220 35% 6%;
+  --success: 144 78% 49%;
+  --warning: 43 96% 54%;
+  --danger: 2 82% 63%;
+  --gold: 43 96% 58%;
+  --cyan: 191 100% 56%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(26, 99, 171, 0.25), transparent 28%),
+    radial-gradient(circle at 100% 10%, rgba(223, 160, 43, 0.16), transparent 32%),
+    linear-gradient(180deg, #050b17 0%, #060d1b 100%);
+  color: hsl(var(--foreground));
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(67, 92, 138, 0.6);
+  border-radius: 999px;
+}
+
+.timeline-grab {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.timeline-grab::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.time-button {
+  display: inline-flex;
+  min-width: 80px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(82, 97, 126, 0.9);
+  background-color: transparent;
+  color: rgba(185, 201, 230, 0.86);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  will-change: background-color, color, border-color;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.time-button:hover:not(.selected):not([aria-current='true']) {
+  background-color: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
+  color: #00d4ff;
+}
+
+.time-button.selected,
+.time-button[aria-current='true'],
+.time-button[aria-pressed='true'] {
+  background-color: #00d4ff !important;
+  color: #000 !important;
+  border-color: #00d4ff !important;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.25);
+}
+
+.time-button:active {
+  transform: translateZ(0) scale(0.97);
+}
+
+.time-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.time-button::before,
+.time-button::after {
+  display: none !important;
+}
