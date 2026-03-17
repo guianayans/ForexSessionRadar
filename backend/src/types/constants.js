@@ -106,8 +106,13 @@ const DEFAULT_STORE = {
     alertOnSessionOpen: true,
     alertOnOverlapStart: true,
     alertOnIdealWindowEnd: true,
+    emailNotificationsEnabled: true,
+    emailAddress: '',
     sessionAlarms: {},
     eventAlarms: {}
+  },
+  notifications: {
+    emailSentByTriggerId: {}
   },
   planner: {
     checklist: [

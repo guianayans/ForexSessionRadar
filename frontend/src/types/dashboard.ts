@@ -118,6 +118,8 @@ export interface Preferences {
   alertOnSessionOpen: boolean;
   alertOnOverlapStart: boolean;
   alertOnIdealWindowEnd: boolean;
+  emailNotificationsEnabled?: boolean;
+  emailAddress?: string;
   sessionAlarms?: Partial<Record<SessionWindow['id'], SessionAlarmConfig>>;
   eventAlarms?: Record<string, EventAlarmConfig>;
 }
@@ -152,6 +154,13 @@ export interface DashboardPayload {
   radar: Radar;
   upcomingEvents: UpcomingEvent[];
   nextAlert: NextAlert | null;
+  email?: {
+    enabled: boolean;
+    configured: boolean;
+    reason?: string | null;
+    from?: string | null;
+    defaultRecipient?: string | null;
+  } | null;
   preferences: Preferences;
   planner: Planner;
 }

@@ -15,4 +15,6 @@ backend/data
 *.dmg
 .env
 .env.*
+!.env.example
+!backend/.env.example
 apiKey.md

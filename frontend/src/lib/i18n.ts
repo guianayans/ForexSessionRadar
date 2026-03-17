@@ -127,6 +127,19 @@ type MessageKey =
   | 'alert.openSession'
   | 'alert.overlapStart'
   | 'alert.idealWindowEnd'
+  | 'alert.emailTitle'
+  | 'alert.emailEnable'
+  | 'alert.emailAddress'
+  | 'alert.emailSave'
+  | 'alert.emailHint'
+  | 'alert.emailSendingTo'
+  | 'alert.emailInvalid'
+  | 'alert.emailSaved'
+  | 'alert.emailSaveError'
+  | 'alert.emailSmtpDisabled'
+  | 'alert.emailSmtpMissing'
+  | 'alert.emailFrom'
+  | 'alert.emailDefaultTo'
   | 'phase.marketTitle'
   | 'phase.sessionTitle'
   | 'phase.status'
@@ -268,6 +281,19 @@ const PT_BR: Dictionary = {
   'alert.openSession': 'Abertura de sessao',
   'alert.overlapStart': 'Inicio do overlap Londres + Nova York',
   'alert.idealWindowEnd': 'Fim da janela ideal',
+  'alert.emailTitle': 'Notificacoes por e-mail',
+  'alert.emailEnable': 'Enviar alertas por e-mail',
+  'alert.emailAddress': 'E-mail de destino',
+  'alert.emailSave': 'Salvar e-mail',
+  'alert.emailHint': 'Configure SMTP no backend para habilitar os envios.',
+  'alert.emailSendingTo': 'Enviando alertas para {email}',
+  'alert.emailInvalid': 'Informe um e-mail valido (ex.: nome@dominio.com).',
+  'alert.emailSaved': 'E-mail salvo com sucesso.',
+  'alert.emailSaveError': 'Nao foi possivel salvar agora.',
+  'alert.emailSmtpDisabled': 'Envio por e-mail desativado no backend.',
+  'alert.emailSmtpMissing': 'SMTP incompleto no backend.',
+  'alert.emailFrom': 'Remetente whitelabel: {from}',
+  'alert.emailDefaultTo': 'Destino padrao: {email}',
   'phase.marketTitle': 'Fase do Mercado',
   'phase.sessionTitle': 'Fase da Sessao',
   'phase.status': 'Status',
@@ -409,6 +435,19 @@ const EN_US: Dictionary = {
   'alert.openSession': 'Session open',
   'alert.overlapStart': 'London + New York overlap start',
   'alert.idealWindowEnd': 'Ideal window end',
+  'alert.emailTitle': 'Email notifications',
+  'alert.emailEnable': 'Send alerts by email',
+  'alert.emailAddress': 'Destination email',
+  'alert.emailSave': 'Save email',
+  'alert.emailHint': 'Configure backend SMTP to enable deliveries.',
+  'alert.emailSendingTo': 'Sending alerts to {email}',
+  'alert.emailInvalid': 'Enter a valid email (e.g. name@domain.com).',
+  'alert.emailSaved': 'Email saved successfully.',
+  'alert.emailSaveError': 'Could not save right now.',
+  'alert.emailSmtpDisabled': 'Email delivery disabled in backend.',
+  'alert.emailSmtpMissing': 'Incomplete SMTP configuration in backend.',
+  'alert.emailFrom': 'Whitelabel sender: {from}',
+  'alert.emailDefaultTo': 'Default recipient: {email}',
   'phase.marketTitle': 'Market Phase',
   'phase.sessionTitle': 'Session Phase',
   'phase.status': 'Status',
@@ -539,6 +578,19 @@ const ES_ES: Dictionary = {
   'alert.openSession': 'Apertura de sesion',
   'alert.overlapStart': 'Inicio del overlap Londres + Nueva York',
   'alert.idealWindowEnd': 'Fin de la ventana ideal',
+  'alert.emailTitle': 'Notificaciones por correo',
+  'alert.emailEnable': 'Enviar alertas por correo',
+  'alert.emailAddress': 'Correo de destino',
+  'alert.emailSave': 'Guardar correo',
+  'alert.emailHint': 'Configura SMTP en el backend para habilitar envios.',
+  'alert.emailSendingTo': 'Enviando alertas a {email}',
+  'alert.emailInvalid': 'Ingresa un correo valido (ej: nombre@dominio.com).',
+  'alert.emailSaved': 'Correo guardado correctamente.',
+  'alert.emailSaveError': 'No fue posible guardar ahora.',
+  'alert.emailSmtpDisabled': 'Envio por correo desactivado en el backend.',
+  'alert.emailSmtpMissing': 'Configuracion SMTP incompleta en el backend.',
+  'alert.emailFrom': 'Remitente whitelabel: {from}',
+  'alert.emailDefaultTo': 'Destino predeterminado: {email}',
   'phase.marketTitle': 'Fase del Mercado',
   'phase.sessionTitle': 'Fase de la Sesion',
   'phase.context': 'Contexto',

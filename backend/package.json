@@ -10,12 +10,15 @@
     "build": "node scripts/prepare-build.mjs",
     "build:sidecar": "node scripts/build-sidecar.mjs",
     "validate:timezones": "node scripts/validate-timezones.mjs",
-    "test:market": "node --test src/services/marketTimeService.test.js"
+    "test:market": "node --test src/services/marketTimeService.test.js",
+    "test:email-alerts": "node --test src/services/sessionService.emailAlarms.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
     "express": "^5.1.0",
     "luxon": "^3.7.2",
+    "nodemailer": "^8.0.2",
     "zod": "^4.1.5"
   },
   "devDependencies": {

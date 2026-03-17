@@ -23,6 +23,8 @@ const preferencesSchema = z.object({
   alertOnSessionOpen: z.boolean().optional(),
   alertOnOverlapStart: z.boolean().optional(),
   alertOnIdealWindowEnd: z.boolean().optional(),
+  emailNotificationsEnabled: z.boolean().optional(),
+  emailAddress: z.union([z.string().email(), z.literal('')]).optional(),
   sessionAlarms: z.record(z.string(), sessionAlarmSchema).optional(),
   eventAlarms: z.record(z.string(), eventAlarmSchema).optional()
 });

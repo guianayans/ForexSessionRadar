@@ -31,6 +31,7 @@ function parseMockNow(value, timezone = BASE_TIMEZONE) {
 function createDashboardRoutes(store, options = {}) {
   const router = Router();
   const getNow = typeof options.getNow === 'function' ? options.getNow : () => undefined;
+  const getEmailStatus = typeof options.getEmailStatus === 'function' ? options.getEmailStatus : () => null;
 
   router.get('/dashboard', async (req, res, next) => {
     try {
@@ -39,7 +40,19 @@ function createDashboardRoutes(store, options = {}) {
       const mockFromQuery = parseMockNow(req.query?.mockNow, runtimeTimezone);
       const mockFromHeader = parseMockNow(req.get('x-forex-mock-now'), runtimeTimezone);
       const dashboard = computeDashboard(payload, mockFromQuery || mockFromHeader || getNow(), runtimeTimezone);
-      res.json(dashboard);
+      const emailStatus = getEmailStatus();
+      res.json({
+        ...dashboard,
+        email: emailStatus
+          ? {
+              enabled: Boolean(emailStatus.enabled),
+              configured: Boolean(emailStatus.configured),
+              reason: emailStatus.reason || null,
+              from: emailStatus.from || null,
+              defaultRecipient: emailStatus.defaultRecipient || null
+            }
+          : null
+      });
     } catch (error) {
       next(error);
     }

@@ -21,6 +21,7 @@ O projeto roda em arquitetura local:
 - Ajuste de timezone com modo automatico e modo travado por cidade
 - Logica de DST por timezone real
 - Alertas com notificacoes locais
+- Alertas por e-mail (SMTP autenticado)
 - Radar de ativos por contexto de sessao
 - Planner operacional
 - Assistente inteligente com fallback local e suporte OpenAI por API Key
@@ -98,6 +99,49 @@ Saidas principais:
 ## Configuracao OpenAI (Opcional)
 
 No chat, configure sua API key, ou envie no backend (`OPENAI_API_KEY`) para respostas via OpenAI.
+
+## Configuracao de E-mail (SMTP)
+
+O envio de alertas por e-mail roda no backend e fica desativado por padrao.
+
+### Variaveis de ambiente
+
+```bash
+EMAIL_NOTIFICATIONS_ENABLED=true
+SMTP_HOST=smtp.seuprovedor.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=seu_usuario
+SMTP_PASS=sua_senha_ou_app_password
+SMTP_FROM="Forex Session Radar <alertas@seu-dominio.com>"
+EMAIL_WHITELABEL_FROM="Radar FX <alerts@seu-dominio.com>"
+EMAIL_DEFAULT_TO="destino-padrao@seu-dominio.com"
+```
+
+### Onde colocar o arquivo de configuracao (macOS)
+
+O backend agora carrega automaticamente variaveis de ambiente destes caminhos (primeiro encontrado):
+
+1. `.env` na raiz do projeto
+2. `backend/.env` na raiz do projeto
+3. `~/.forex-session-radar.env`
+4. `~/Library/Application Support/Forex Session Radar/backend.env`
+
+Para app instalado via `.app`/`.dmg` (abrindo pelo Finder), use preferencialmente:
+
+`~/Library/Application Support/Forex Session Radar/backend.env`
+
+### Como ativar no app
+
+1. Abra o card **Proximo Alerta**.
+2. Ative **Enviar alertas por e-mail**.
+3. Informe o **e-mail de destino** e salve.
+
+Notas importantes:
+
+- `EMAIL_WHITELABEL_FROM` define o remetente whitelabel (prioridade sobre `SMTP_FROM`).
+- `EMAIL_DEFAULT_TO` funciona como fallback quando o usuario nao preencher destino no card.
+- O backend faz deduplicacao por trigger para evitar envios repetidos.
 
 ## Troubleshooting
 

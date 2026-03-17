@@ -330,6 +330,53 @@ function normalizeEventLeadMinutes(eventAlarm, fallbackLeadMinutes) {
   return [fallbackLeadMinutes];
 }
 
+function resolveEventAlarmConfig(event, preferences) {
+  const eventAlarms = preferences?.eventAlarms || {};
+  if (!event || !event.id) {
+    return null;
+  }
+
+  if (eventAlarms[event.id]) {
+    return eventAlarms[event.id];
+  }
+
+  const eventTime = event.timeIso;
+  if (!eventTime) {
+    return null;
+  }
+
+  const suffixByType = {
+    session_open: `-open-${eventTime}`,
+    session_close: `-close-${eventTime}`,
+    overlap_start: `-start-${eventTime}`,
+    ideal_window_end: `-end-${eventTime}`,
+    weekly_open: `weekly-open-${eventTime}`,
+    weekly_close: `weekly-close-${eventTime}`
+  };
+
+  const suffix = suffixByType[event.type];
+  if (!suffix) {
+    return null;
+  }
+
+  const matches = Object.entries(eventAlarms).filter(([alarmId]) =>
+    event.type === 'weekly_open' || event.type === 'weekly_close' ? alarmId === suffix : alarmId.endsWith(suffix)
+  );
+
+  if (!matches.length) {
+    return null;
+  }
+
+  // Preferir correspondencia semantica quando houver multiplos IDs "decorados" no frontend.
+  const semanticPrefix = event.id.split('-')[0];
+  const preferred = matches.find(([alarmId]) => alarmId.includes(semanticPrefix));
+  if (preferred) {
+    return preferred[1];
+  }
+
+  return matches[0][1];
+}
+
 function buildEventLeadMinutes(event, preferences) {
   const leads = new Set();
 
@@ -362,7 +409,7 @@ function buildEventLeadMinutes(event, preferences) {
     }
   }
 
-  const eventAlarm = preferences.eventAlarms?.[event.id];
+  const eventAlarm = resolveEventAlarmConfig(event, preferences);
   if (eventAlarm?.enabled) {
     normalizeEventLeadMinutes(eventAlarm, preferences.alertLeadMinutes).forEach((minutes) => {
       leads.add(minutes);
@@ -373,22 +420,7 @@ function buildEventLeadMinutes(event, preferences) {
 }
 
 function getNextAlert(upcomingEvents, preferences, nowIso) {
-  const now = DateTime.fromISO(nowIso);
-
-  const triggerCandidates = upcomingEvents
-    .flatMap((event) => {
-      const eventTime = DateTime.fromISO(event.timeIso);
-      return buildEventLeadMinutes(event, preferences).map((leadMinutes) => {
-        const triggerTime = eventTime.minus({ minutes: leadMinutes });
-        return {
-          ...event,
-          leadMinutes,
-          triggerTimeIso: triggerTime.toISO(),
-          triggerInSeconds: Math.floor((triggerTime.toMillis() - now.toMillis()) / 1000),
-          triggerId: `${event.id}:lead-${leadMinutes}`
-        };
-      });
-    })
+  const triggerCandidates = getAlertTriggerCandidates(upcomingEvents, preferences, nowIso)
     .filter((event) => event.triggerInSeconds >= 0)
     .sort((a, b) => a.triggerInSeconds - b.triggerInSeconds);
 
@@ -406,6 +438,24 @@ function getNextAlert(upcomingEvents, preferences, nowIso) {
     triggerTimeIso: next.triggerTimeIso,
     countdownSeconds: next.triggerInSeconds
   };
+}
+
+function getAlertTriggerCandidates(upcomingEvents, preferences, nowIso) {
+  const now = DateTime.fromISO(nowIso);
+
+  return upcomingEvents.flatMap((event) => {
+    const eventTime = DateTime.fromISO(event.timeIso);
+    return buildEventLeadMinutes(event, preferences).map((leadMinutes) => {
+      const triggerTime = eventTime.minus({ minutes: leadMinutes });
+      return {
+        ...event,
+        leadMinutes,
+        triggerTimeIso: triggerTime.toISO(),
+        triggerInSeconds: Math.floor((triggerTime.toMillis() - now.toMillis()) / 1000),
+        triggerId: `${event.id}:lead-${leadMinutes}`
+      };
+    });
+  });
 }
 
 function computeDashboard(storePayload, referenceNow = DateTime.now(), runtimeTimezone = BASE_TIMEZONE) {
@@ -426,6 +476,7 @@ function computeDashboard(storePayload, referenceNow = DateTime.now(), runtimeTi
 module.exports = {
   buildSnapshot,
   getUpcomingEvents,
+  getAlertTriggerCandidates,
   getNextAlert,
   computeDashboard
 };

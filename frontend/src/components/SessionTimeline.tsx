@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLiveNow } from '@/hooks/useLiveNow';
 import type { CurrentSession, MarketState, OverlapWindow, Preferences, SessionWindow, UpcomingEvent } from '@/types/dashboard';
 import { useTimelineUiStore } from '@/store/useTimelineUiStore';
+import { uploadTimelineSnapshot } from '@/services/api';
 import { NowIndicator } from '@/components/timeline/NowIndicator';
 import { EventMarkerPopup } from '@/components/timeline/EventMarkerPopup';
 import { GoldenWindowPanel } from '@/components/timeline/GoldenWindowPanel';
@@ -264,6 +265,16 @@ function getRunningFadeMask(leftPercent: number, widthPercent: number, profile: 
   return `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${startStop}%, rgba(0,0,0,1) ${endStop}%, rgba(0,0,0,1) 100%)`;
 }
 
+function estimateDataUrlBytes(dataUrl: string) {
+  const commaIndex = dataUrl.indexOf(',');
+  if (commaIndex < 0) {
+    return 0;
+  }
+
+  const base64 = dataUrl.slice(commaIndex + 1);
+  return Math.floor((base64.length * 3) / 4);
+}
+
 function resolveSessionTooltipLayer() {
   if (typeof document === 'undefined') {
     return null;
@@ -442,7 +453,11 @@ export const SessionTimeline = memo(function SessionTimeline({
   const timelineTimezoneLabel = useMemo(() => formatTimezoneCityLabel(baseTimezone), [baseTimezone]);
 
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const captureCardRef = useRef<HTMLDivElement | null>(null);
   const nowPopupTimeoutRef = useRef<number | null>(null);
+  const snapshotUploadInFlightRef = useRef(false);
+  const lastSnapshotUploadAtRef = useRef(0);
+  const panelOpenRef = useRef(false);
   const suppressSessionClickUntilRef = useRef(0);
 
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
@@ -875,9 +890,69 @@ export const SessionTimeline = memo(function SessionTimeline({
     [upcomingEvents, now]
   );
   const isAnyTimelinePanelOpen = Boolean(sessionMenu || eventMenu || overlapPanel);
+  panelOpenRef.current = isAnyTimelinePanelOpen;
+
+  const captureTimelineSnapshot = useCallback(async () => {
+    if (snapshotUploadInFlightRef.current) {
+      return;
+    }
+
+    if (!captureCardRef.current || typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    if (document.visibilityState === 'hidden' || panelOpenRef.current) {
+      return;
+    }
+
+    const nowMs = Date.now();
+    if (nowMs - lastSnapshotUploadAtRef.current < 45_000) {
+      return;
+    }
+
+    snapshotUploadInFlightRef.current = true;
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const captureScale = Math.min(3, Math.max(2, (window.devicePixelRatio || 1) * 1.5));
+      const canvas = await html2canvas(captureCardRef.current, {
+        backgroundColor: '#061326',
+        useCORS: true,
+        logging: false,
+        scale: captureScale
+      });
+
+      const pngDataUrl = canvas.toDataURL('image/png');
+      const imageDataUrl =
+        estimateDataUrlBytes(pngDataUrl) <= 7_500_000 ? pngDataUrl : canvas.toDataURL('image/jpeg', 0.95);
+      await uploadTimelineSnapshot({
+        imageDataUrl,
+        capturedAtIso: DateTime.now().setZone(baseTimezone).toISO() || DateTime.now().toISO() || undefined,
+        timezone: baseTimezone,
+        locale
+      });
+      lastSnapshotUploadAtRef.current = Date.now();
+    } catch (error) {
+      console.warn('[timeline] Falha ao capturar snapshot para e-mail:', error);
+    } finally {
+      snapshotUploadInFlightRef.current = false;
+    }
+  }, [baseTimezone, locale]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    void captureTimelineSnapshot();
+    const intervalId = window.setInterval(() => {
+      void captureTimelineSnapshot();
+    }, 60_000);
+    return () => window.clearInterval(intervalId);
+  }, [captureTimelineSnapshot]);
 
   return (
     <div ref={rootRef}>
+      <div ref={captureCardRef}>
       <Card className="relative z-20 overflow-visible border-border/70 bg-slate-950/70">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
@@ -1103,6 +1178,7 @@ export const SessionTimeline = memo(function SessionTimeline({
         </div>
       </CardContent>
       </Card>
+      </div>
 
       {isAnyTimelinePanelOpen ? (
         <div

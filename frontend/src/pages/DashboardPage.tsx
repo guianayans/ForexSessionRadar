@@ -22,6 +22,7 @@ import { formatCountdown } from '@/lib/utils';
 import { AlertCard } from '@/components/AlertCard';
 import { AssetRadar } from '@/components/AssetRadar';
 import { CurrentSessionCard } from '@/components/CurrentSessionCard';
+import { EmailConfigModal } from '@/components/EmailConfigModal';
 import { FloatingChatAssistant } from '@/components/FloatingChatAssistant';
 import { OperationalPlanner } from '@/components/OperationalPlanner';
 import { SessionPhaseCard } from '@/components/SessionPhaseCard';
@@ -278,7 +279,8 @@ const LanguageMenu = memo(function LanguageMenu({
 });
 
 export function DashboardPage() {
-  const { data, loading, error, savePlanner, savePreferences, queryAssistant } = useDashboardData();
+  const { data, loading, error, reload, savePlanner, savePreferences, queryAssistant } = useDashboardData();
+  const [emailConfigOpen, setEmailConfigOpen] = useState(false);
 
   useAlertNotifications(data?.nextAlert ?? null);
 
@@ -401,12 +403,14 @@ export function DashboardPage() {
           <div className="xl:col-span-3">
             <AlertCard
               nextAlert={data.nextAlert}
+              emailStatus={data.email || null}
               preferences={data.preferences}
               seedNowIso={data.nowIso}
               baseTimezone={data.baseTimezone}
               locale={locale}
               marketOpen={data.marketState.isOpen}
               marketState={data.marketState}
+              onOpenEmailConfig={() => setEmailConfigOpen(true)}
               onUpdatePreferences={savePreferences}
             />
           </div>
@@ -431,6 +435,15 @@ export function DashboardPage() {
       </div>
 
       <FloatingChatAssistant dashboard={data} locale={locale} onAsk={queryAssistant} />
+      <EmailConfigModal
+        open={emailConfigOpen}
+        locale={locale}
+        prefillEmail={data.preferences.emailAddress || ''}
+        onClose={() => setEmailConfigOpen(false)}
+        onSaved={() => {
+          void reload();
+        }}
+      />
     </main>
   );
 }
