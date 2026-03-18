@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  forex-radar:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - '/pendriver/forexRadar:/app'
+      - '/pendriver/forexRadar-data:/app/data'
+    environment:
+      NODE_ENV: production
+      PORT: '3080'
+      FOREX_ENV_FILE: /app/data/backend.env
+      APP_PUBLIC_URL: 'http://yanserver.ddns.net:3080'
+      EMAIL_CTA_URL: 'http://yanserver.ddns.net:3080'
+    command: >
+      sh -c "npm ci --no-audit --no-fund &&
+             npm run build:frontend &&
+             node backend/src/server.js --host 0.0.0.0 --port 3080 --data-dir /app/data"
+    ports:
+      - '3080:3080'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "const http=require('http');http.get('http://127.0.0.1:3080/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1));"
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s

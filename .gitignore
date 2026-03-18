@@ -18,3 +18,4 @@ backend/data
 !.env.example
 !backend/.env.example
 apiKey.md
+GITHUB.md
