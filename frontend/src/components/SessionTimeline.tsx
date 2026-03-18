@@ -8,6 +8,7 @@ import { useLiveNow } from '@/hooks/useLiveNow';
 import type { CurrentSession, MarketState, OverlapWindow, Preferences, SessionWindow, UpcomingEvent } from '@/types/dashboard';
 import { useTimelineUiStore } from '@/store/useTimelineUiStore';
 import { uploadTimelineSnapshot } from '@/services/api';
+import { captureTimelineSnapshot as captureStableTimelineSnapshot } from '@/lib/timelineSnapshotCapture';
 import { NowIndicator } from '@/components/timeline/NowIndicator';
 import { EventMarkerPopup } from '@/components/timeline/EventMarkerPopup';
 import { GoldenWindowPanel } from '@/components/timeline/GoldenWindowPanel';
@@ -263,16 +264,6 @@ function getRunningFadeMask(leftPercent: number, widthPercent: number, profile: 
   }
 
   return `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${startStop}%, rgba(0,0,0,1) ${endStop}%, rgba(0,0,0,1) 100%)`;
-}
-
-function estimateDataUrlBytes(dataUrl: string) {
-  const commaIndex = dataUrl.indexOf(',');
-  if (commaIndex < 0) {
-    return 0;
-  }
-
-  const base64 = dataUrl.slice(commaIndex + 1);
-  return Math.floor((base64.length * 3) / 4);
 }
 
 function resolveSessionTooltipLayer() {
@@ -912,18 +903,9 @@ export const SessionTimeline = memo(function SessionTimeline({
 
     snapshotUploadInFlightRef.current = true;
     try {
-      const { default: html2canvas } = await import('html2canvas');
-      const captureScale = Math.min(3, Math.max(2, (window.devicePixelRatio || 1) * 1.5));
-      const canvas = await html2canvas(captureCardRef.current, {
-        backgroundColor: '#061326',
-        useCORS: true,
-        logging: false,
-        scale: captureScale
+      const imageDataUrl = await captureStableTimelineSnapshot(captureCardRef.current, {
+        maxPngBytes: 7_500_000
       });
-
-      const pngDataUrl = canvas.toDataURL('image/png');
-      const imageDataUrl =
-        estimateDataUrlBytes(pngDataUrl) <= 7_500_000 ? pngDataUrl : canvas.toDataURL('image/jpeg', 0.95);
       await uploadTimelineSnapshot({
         imageDataUrl,
         capturedAtIso: DateTime.now().setZone(baseTimezone).toISO() || DateTime.now().toISO() || undefined,
