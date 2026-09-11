@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(file logo.png apple-touch-icon.png favicon-32x32.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight logo.png apple-touch-icon.png)",
+      "Bash(mkdir -p pwa)",
+      "Bash(sips -z 192 192 logo.png --out pwa/icon-192.png)",
+      "Bash(sips -z 512 512 logo.png --out pwa/icon-512.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight pwa/icon-192.png pwa/icon-512.png)",
+      "Bash(grep -rn \"tauri\\\\|isNativeIosApp\\\\|Capacitor\" src --include=\"*.ts\" --include=\"*.tsx\" -l)",
+      "Bash(ls -la ../src-tauri)",
+      "Bash(npm run *)",
+      "Bash(npx vite *)"
+    ]
+  }
+}

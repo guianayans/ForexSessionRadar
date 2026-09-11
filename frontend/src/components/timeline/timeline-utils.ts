@@ -27,12 +27,27 @@ const SESSION_INSIGHTS: Record<SessionWindow['id'], SessionInsight> = {
   tokyo: {
     liquidity: 'Moderada',
     behavior: 'Consolidacao, range tecnico e rompimentos pontuais',
-    assets: ['USD/JPY', 'AUD/USD', 'NZD/USD', 'JP225', 'HK50']
+    assets: ['USD/JPY', 'AUD/USD', 'NZD/USD', 'JP225']
+  },
+  hong_kong: {
+    liquidity: 'Moderada',
+    behavior: 'Fluxo do indice HK50 e pares asiaticos correlacionados',
+    assets: ['HK50', 'USD/JPY', 'JP225']
+  },
+  shanghai: {
+    liquidity: 'Moderada',
+    behavior: 'Fluxo do CHINA50 e pares asiaticos correlacionados',
+    assets: ['CHINA50', 'USD/CNH', 'HK50']
   },
   london: {
     liquidity: 'Alta',
     behavior: 'Rompimentos iniciais e expansao do range',
     assets: ['EUR/USD', 'GBP/USD', 'GER40', 'XAUUSD']
+  },
+  brazil: {
+    liquidity: 'Moderada',
+    behavior: 'Fluxo do IBOVESPA e pares locais correlacionados',
+    assets: ['IBOVESPA', 'WINFUT', 'WDOFUT', 'USD/BRL', 'EUR/USD']
   },
   new_york: {
     liquidity: 'Muito alta',
@@ -143,6 +158,18 @@ export function getCurrentPhaseLabel(currentSession: CurrentSession, marketState
 
   if (currentSession.id === 'tokyo') {
     return localizeOperationalText('Range Asiatico', locale);
+  }
+
+  if (currentSession.id === 'hong_kong') {
+    return localizeOperationalText('Bolsa de Hong Kong', locale);
+  }
+
+  if (currentSession.id === 'shanghai') {
+    return localizeOperationalText('Bolsa de Xangai', locale);
+  }
+
+  if (currentSession.id === 'brazil') {
+    return localizeOperationalText('Bolsa do Brasil', locale);
   }
 
   return localizeOperationalText('Transicao', locale);

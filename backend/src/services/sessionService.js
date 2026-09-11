@@ -1,6 +1,6 @@
 const { DateTime } = require('luxon');
 const { BASE_TIMEZONE, CLOCKS } = require('../types/constants');
-const { getRadarForContext } = require('./radarService');
+const { getRadarForContext, enrichRadarWithActiveExchanges } = require('./radarService');
 const {
   getCurrentMarketState,
   getNextSession,
@@ -8,7 +8,22 @@ const {
   getSessionSchedules
 } = require('./marketTimeService');
 
-const ALERT_LEAD_CHOICES = new Set([5, 10, 15, 30]);
+const CURRENT_SESSION_PRIORITY = ['new_york', 'london', 'tokyo', 'sydney', 'hong_kong', 'shanghai', 'brazil'];
+const GOLDEN_OVERLAP_IDS = new Set(['london_newyork']);
+
+function sessionPriorityIndex(sessionId) {
+  const index = CURRENT_SESSION_PRIORITY.indexOf(sessionId);
+  return index === -1 ? CURRENT_SESSION_PRIORITY.length : index;
+}
+
+function resolvePrimaryOverlap(overlaps) {
+  const golden = overlaps.find((overlap) => overlap.id === 'london_newyork' && overlap.isActive) || null;
+  if (golden) {
+    return golden;
+  }
+
+  return overlaps.find((overlap) => overlap.id === 'london_newyork') || overlaps[0] || null;
+}
 
 function isValidTimezone(timezone) {
   if (!timezone || typeof timezone !== 'string') {
@@ -59,7 +74,7 @@ function stripInternalSessionFields(session) {
   };
 }
 
-function getCurrentSessionPayload(marketState, sessions, primaryOverlap) {
+function getCurrentSessionPayload(marketState, sessions, activeOverlap, now = DateTime.now()) {
   if (!marketState.isOpen) {
     const radar = getRadarForContext('closed');
     return {
@@ -76,15 +91,15 @@ function getCurrentSessionPayload(marketState, sessions, primaryOverlap) {
     };
   }
 
-  if (primaryOverlap?.isActive) {
+  if (activeOverlap?.isActive && GOLDEN_OVERLAP_IDS.has(activeOverlap.id)) {
     const radar = getRadarForContext('gold');
     return {
       session: {
         id: 'gold',
         label: 'Janela de Ouro',
         volatility: 'Muito Alta',
-        startIso: primaryOverlap.startIso,
-        endIso: primaryOverlap.endIso,
+        startIso: activeOverlap.startIso,
+        endIso: activeOverlap.endIso,
         recommendedAssets: radar.recommended
       },
       radar,
@@ -94,7 +109,14 @@ function getCurrentSessionPayload(marketState, sessions, primaryOverlap) {
 
   const active = sessions
     .filter((session) => session.isActive && session.startIso)
-    .sort((a, b) => DateTime.fromISO(b.startIso).toMillis() - DateTime.fromISO(a.startIso).toMillis())[0];
+    .sort((a, b) => {
+      const priorityDiff = sessionPriorityIndex(a.id) - sessionPriorityIndex(b.id);
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+
+      return DateTime.fromISO(b.startIso).toMillis() - DateTime.fromISO(a.startIso).toMillis();
+    })[0];
 
   if (!active) {
     const radar = getRadarForContext('closed');
@@ -112,7 +134,7 @@ function getCurrentSessionPayload(marketState, sessions, primaryOverlap) {
     };
   }
 
-  const radar = getRadarForContext(active.id);
+  const radar = getRadarForContext(active.id, now);
   return {
     session: {
       id: active.id,
@@ -169,13 +191,17 @@ function buildSnapshot(referenceNow = DateTime.now(), timezone = BASE_TIMEZONE) 
     return marketState.isOpen ? publicSession : { ...publicSession, isActive: false };
   });
 
-  const primaryOverlap = overlaps.find((overlap) => overlap.id === 'london_newyork') || overlaps[0] || null;
+  const goldenOverlap = overlaps.find((overlap) => overlap.id === 'london_newyork' && overlap.isActive) || null;
+  const primaryOverlap = resolvePrimaryOverlap(overlaps);
 
   const { session: currentSession, radar, radarContext } = getCurrentSessionPayload(
     marketState,
     timelineSessions,
-    primaryOverlap
+    goldenOverlap,
+    now
   );
+
+  const enrichedRadar = enrichRadarWithActiveExchanges(radar, timelineSessions, now);
 
   const nextSession = getNextSession(now, timezone);
   const lastSession = getLastSessionPayload(now, sessionSchedules, marketState);
@@ -204,7 +230,7 @@ function buildSnapshot(referenceNow = DateTime.now(), timezone = BASE_TIMEZONE) 
     lastSession,
     nextSession,
     radar: {
-      ...radar,
+      ...enrichedRadar,
       context: radarContext
     }
   };
@@ -305,169 +331,14 @@ function getUpcomingEvents(snapshot) {
     });
 }
 
-function normalizeBeforeMinutes(values) {
-  if (!Array.isArray(values)) {
-    return [];
-  }
-
-  return [...new Set(values.filter((value) => ALERT_LEAD_CHOICES.has(value)))].sort((a, b) => a - b);
-}
-
-function normalizeEventLeadMinutes(eventAlarm, fallbackLeadMinutes) {
-  if (!eventAlarm) {
-    return [fallbackLeadMinutes];
-  }
-
-  const fromArray = normalizeBeforeMinutes(eventAlarm.beforeMinutes);
-  if (fromArray.length) {
-    return fromArray;
-  }
-
-  if (ALERT_LEAD_CHOICES.has(eventAlarm.leadMinutes)) {
-    return [eventAlarm.leadMinutes];
-  }
-
-  return [fallbackLeadMinutes];
-}
-
-function resolveEventAlarmConfig(event, preferences) {
-  const eventAlarms = preferences?.eventAlarms || {};
-  if (!event || !event.id) {
-    return null;
-  }
-
-  if (eventAlarms[event.id]) {
-    return eventAlarms[event.id];
-  }
-
-  const eventTime = event.timeIso;
-  if (!eventTime) {
-    return null;
-  }
-
-  const suffixByType = {
-    session_open: `-open-${eventTime}`,
-    session_close: `-close-${eventTime}`,
-    overlap_start: `-start-${eventTime}`,
-    ideal_window_end: `-end-${eventTime}`,
-    weekly_open: `weekly-open-${eventTime}`,
-    weekly_close: `weekly-close-${eventTime}`
-  };
-
-  const suffix = suffixByType[event.type];
-  if (!suffix) {
-    return null;
-  }
-
-  const matches = Object.entries(eventAlarms).filter(([alarmId]) =>
-    event.type === 'weekly_open' || event.type === 'weekly_close' ? alarmId === suffix : alarmId.endsWith(suffix)
-  );
-
-  if (!matches.length) {
-    return null;
-  }
-
-  // Preferir correspondencia semantica quando houver multiplos IDs "decorados" no frontend.
-  const semanticPrefix = event.id.split('-')[0];
-  const preferred = matches.find(([alarmId]) => alarmId.includes(semanticPrefix));
-  if (preferred) {
-    return preferred[1];
-  }
-
-  return matches[0][1];
-}
-
-function buildEventLeadMinutes(event, preferences) {
-  const leads = new Set();
-
-  if (event.type === 'session_open' && preferences.alertOnSessionOpen) {
-    leads.add(preferences.alertLeadMinutes);
-  }
-
-  if (event.type === 'overlap_start' && preferences.alertOnOverlapStart) {
-    leads.add(preferences.alertLeadMinutes);
-  }
-
-  if (event.type === 'ideal_window_end' && preferences.alertOnIdealWindowEnd) {
-    leads.add(preferences.alertLeadMinutes);
-  }
-
-  if (event.sessionId) {
-    const sessionAlarm = preferences.sessionAlarms?.[event.sessionId] || {};
-
-    if (event.type === 'session_open') {
-      if (sessionAlarm.open) {
-        leads.add(0);
-      }
-      normalizeBeforeMinutes(sessionAlarm.beforeMinutes).forEach((minutes) => {
-        leads.add(minutes);
-      });
-    }
-
-    if (event.type === 'session_close' && sessionAlarm.close) {
-      leads.add(0);
-    }
-  }
-
-  const eventAlarm = resolveEventAlarmConfig(event, preferences);
-  if (eventAlarm?.enabled) {
-    normalizeEventLeadMinutes(eventAlarm, preferences.alertLeadMinutes).forEach((minutes) => {
-      leads.add(minutes);
-    });
-  }
-
-  return [...leads];
-}
-
-function getNextAlert(upcomingEvents, preferences, nowIso) {
-  const triggerCandidates = getAlertTriggerCandidates(upcomingEvents, preferences, nowIso)
-    .filter((event) => event.triggerInSeconds >= 0)
-    .sort((a, b) => a.triggerInSeconds - b.triggerInSeconds);
-
-  if (!triggerCandidates.length) {
-    return null;
-  }
-
-  const next = triggerCandidates[0];
-  return {
-    id: next.triggerId,
-    title: next.title,
-    type: next.type,
-    leadMinutes: next.leadMinutes,
-    eventTimeIso: next.timeIso,
-    triggerTimeIso: next.triggerTimeIso,
-    countdownSeconds: next.triggerInSeconds
-  };
-}
-
-function getAlertTriggerCandidates(upcomingEvents, preferences, nowIso) {
-  const now = DateTime.fromISO(nowIso);
-
-  return upcomingEvents.flatMap((event) => {
-    const eventTime = DateTime.fromISO(event.timeIso);
-    return buildEventLeadMinutes(event, preferences).map((leadMinutes) => {
-      const triggerTime = eventTime.minus({ minutes: leadMinutes });
-      return {
-        ...event,
-        leadMinutes,
-        triggerTimeIso: triggerTime.toISO(),
-        triggerInSeconds: Math.floor((triggerTime.toMillis() - now.toMillis()) / 1000),
-        triggerId: `${event.id}:lead-${leadMinutes}`
-      };
-    });
-  });
-}
-
 function computeDashboard(storePayload, referenceNow = DateTime.now(), runtimeTimezone = BASE_TIMEZONE) {
   const timezone = resolveEffectiveTimezone(storePayload, runtimeTimezone);
   const snapshot = buildSnapshot(referenceNow, timezone);
   const upcomingEvents = getUpcomingEvents(snapshot);
-  const nextAlert = getNextAlert(upcomingEvents, storePayload.preferences, snapshot.nowIso);
 
   return {
     ...snapshot,
     upcomingEvents,
-    nextAlert,
     preferences: storePayload.preferences,
     planner: storePayload.planner
   };
@@ -476,7 +347,5 @@ function computeDashboard(storePayload, referenceNow = DateTime.now(), runtimeTi
 module.exports = {
   buildSnapshot,
   getUpcomingEvents,
-  getAlertTriggerCandidates,
-  getNextAlert,
   computeDashboard
 };

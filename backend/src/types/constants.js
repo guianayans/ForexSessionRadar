@@ -8,7 +8,10 @@ const FOREX_UTC_CONFIG = {
   sessions: {
     sydney: { open: '21:00', close: '06:00' },
     tokyo: { open: '00:00', close: '09:00' },
+    hong_kong: { open: '01:30', close: '08:00' },
+    shanghai: { open: '01:30', close: '07:00' },
     london: { open: '07:00', close: '16:00' },
+    brazil: { open: '12:00', close: '21:00' },
     new_york: { open: '13:00', close: '22:00' }
   }
 };
@@ -18,7 +21,8 @@ const CLOCKS = [
   { id: 'london', label: 'Londres', timezone: 'Europe/London' },
   { id: 'new_york', label: 'Nova York', timezone: 'America/New_York' },
   { id: 'sydney', label: 'Sydney', timezone: 'Australia/Sydney' },
-  { id: 'tokyo', label: 'Toquio', timezone: 'Asia/Tokyo' }
+  { id: 'tokyo', label: 'Toquio', timezone: 'Asia/Tokyo' },
+  { id: 'hong_kong', label: 'Hong Kong', timezone: 'Asia/Hong_Kong' }
 ];
 
 const SESSION_DEFINITIONS = [
@@ -43,6 +47,26 @@ const SESSION_DEFINITIONS = [
     volatility: 'Moderada'
   },
   {
+    id: 'hong_kong',
+    label: 'Bolsa de Hong Kong',
+    shortLabel: 'Hong Kong',
+    timezone: 'Asia/Hong_Kong',
+    openLocal: '09:30',
+    closeLocal: '16:00',
+    color: '#c41e3a',
+    volatility: 'Moderada'
+  },
+  {
+    id: 'shanghai',
+    label: 'Bolsa de Xangai',
+    shortLabel: 'Xangai',
+    timezone: 'Asia/Shanghai',
+    openLocal: '09:30',
+    closeLocal: '15:00',
+    color: '#d4a017',
+    volatility: 'Moderada'
+  },
+  {
     id: 'london',
     label: 'Sessao Europeia',
     shortLabel: 'Londres',
@@ -51,6 +75,16 @@ const SESSION_DEFINITIONS = [
     closeLocal: '17:00',
     color: '#00b8d9',
     volatility: 'Alta'
+  },
+  {
+    id: 'brazil',
+    label: 'Bolsa do Brasil',
+    shortLabel: 'Brasil',
+    timezone: 'America/Sao_Paulo',
+    openLocal: '09:00',
+    closeLocal: '18:00',
+    color: '#009c3b',
+    volatility: 'Moderada'
   },
   {
     id: 'new_york',
@@ -66,9 +100,24 @@ const SESSION_DEFINITIONS = [
 
 const RADAR_MAP = {
   tokyo: {
-    recommended: ['HK50', 'JP225', 'AUD/USD', 'NZD/USD', 'USD/JPY'],
+    recommended: ['JP225', 'AUD/USD', 'NZD/USD', 'USD/JPY'],
     neutral: ['EUR/JPY', 'GBP/JPY', 'AUD/JPY'],
+    avoid: ['XAUUSD', 'US100', 'US500', 'HK50']
+  },
+  hong_kong: {
+    recommended: ['HK50'],
+    neutral: ['USD/JPY', 'JP225', 'AUD/USD', 'NZD/USD'],
     avoid: ['XAUUSD', 'US100', 'US500']
+  },
+  shanghai: {
+    recommended: ['CHINA50'],
+    neutral: ['USD/CNH', 'HK50', 'JP225'],
+    avoid: ['XAUUSD', 'US100', 'US500']
+  },
+  brazil: {
+    recommended: ['IBOVESPA'],
+    neutral: ['USD/BRL', 'EUR/USD', 'XAUUSD'],
+    avoid: ['US100', 'US500', 'HK50']
   },
   sydney: {
     recommended: ['AUD/USD', 'NZD/USD', 'USD/JPY', 'JP225'],
@@ -101,18 +150,7 @@ const RADAR_MAP = {
 const DEFAULT_STORE = {
   preferences: {
     baseTimezone: BASE_TIMEZONE,
-    lockBaseTimezone: false,
-    alertLeadMinutes: 15,
-    alertOnSessionOpen: true,
-    alertOnOverlapStart: true,
-    alertOnIdealWindowEnd: true,
-    emailNotificationsEnabled: true,
-    emailAddress: '',
-    sessionAlarms: {},
-    eventAlarms: {}
-  },
-  notifications: {
-    emailSentByTriggerId: {}
+    lockBaseTimezone: false
   },
   planner: {
     checklist: [

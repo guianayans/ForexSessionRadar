@@ -23,6 +23,7 @@ export function SessionEventMarker({
     <button
       type="button"
       data-timeline-interactive="true"
+      data-timeline-scrollable="true"
       onClick={(event) => {
         event.stopPropagation();
         onClick(event);

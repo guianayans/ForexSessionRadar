@@ -1,8 +1,9 @@
 import { useCallback, useEffect } from 'react';
-import { askAssistant, fetchDashboard, updatePlanner, updatePreferences } from '@/services/api';
+import { savePlannerPatch } from '@/lib/planner-storage';
+import { fetchDashboard, updatePreferences } from '@/services/api';
 import { ensureEmbeddedBackend } from '@/services/backendProcess';
 import { useDashboardStore } from '@/store/useDashboardStore';
-import type { AssistantHistoryMessage, Planner, Preferences } from '@/types/dashboard';
+import type { Planner, Preferences } from '@/types/dashboard';
 
 const POLL_INTERVAL_MS = 60_000;
 
@@ -57,18 +58,15 @@ export function useDashboardData() {
     [loadDashboard]
   );
 
-  const savePlanner = useCallback(
-    async (planner: Partial<Planner>) => {
-      await updatePlanner(planner);
-      await loadDashboard();
-    },
-    [loadDashboard]
-  );
+  const savePlanner = useCallback(async (patch: Partial<Planner>) => {
+    const current = useDashboardStore.getState().data;
+    if (!current) {
+      return;
+    }
 
-  const queryAssistant = useCallback(
-    (question: string, apiKey?: string, history?: AssistantHistoryMessage[]) => askAssistant(question, apiKey, history),
-    []
-  );
+    const nextPlanner = savePlannerPatch(current.planner, patch);
+    setData({ ...current, planner: nextPlanner });
+  }, [setData]);
 
   return {
     data,
@@ -76,7 +74,6 @@ export function useDashboardData() {
     error,
     reload: loadDashboard,
     savePreferences,
-    savePlanner,
-    queryAssistant
+    savePlanner
   };
 }

@@ -3,13 +3,18 @@ import { DateTime } from 'luxon';
 import { Clock3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLiveNow } from '@/hooks/useLiveNow';
-import { localizeOperationalText, localizeSessionLabel, t, type SupportedLocale } from '@/lib/i18n';
+import { localizeClockLabel, localizeOperationalText, localizeSessionId, t, type SupportedLocale } from '@/lib/i18n';
 import {
   detectBrowserTimezone,
   formatTimezoneCityLabel,
   readStoredTimezoneSelection,
   resolveTimezoneFromCityValue
 } from '@/lib/timezone-city-options';
+import {
+  findGoldenOverlap,
+  isBrazilClockHighlight,
+  isSessionInGoldenOverlap
+} from '@/lib/overlap-highlight';
 import { cn } from '@/lib/utils';
 import type { ClockItem, MarketState, OverlapWindow, Preferences, SessionWindow } from '@/types/dashboard';
 
@@ -28,38 +33,33 @@ const CLOCK_TO_SESSION: Partial<Record<ClockItem['id'], SessionWindow['id']>> = 
   london: 'london',
   new_york: 'new_york',
   sydney: 'sydney',
-  tokyo: 'tokyo'
+  tokyo: 'tokyo',
+  hong_kong: 'hong_kong',
+  brasilia: 'brazil'
 };
 
-function getLocalizedClockLabel(clockId: string, fallback: string, locale: SupportedLocale) {
-  if (clockId === 'london') {
-    return locale === 'en-US' ? 'London' : 'Londres';
-  }
-  if (clockId === 'new_york') {
-    return locale === 'pt-BR' ? 'Nova York' : 'New York';
-  }
-  if (clockId === 'sydney') {
-    return 'Sydney';
-  }
-  if (clockId === 'tokyo') {
-    return locale === 'en-US' ? 'Tokyo' : locale === 'es-ES' ? 'Tokio' : 'Toquio';
-  }
-  return fallback;
-}
+const BRAZIL_CLOCK_TIMEZONES = new Set(['America/Sao_Paulo']);
 
-function toSessionId(value: string): SessionWindow['id'] | null {
-  if (value === 'sydney' || value === 'tokyo' || value === 'london' || value === 'new_york') {
-    return value;
+function resolveClockSessionId(clock: ClockItem): SessionWindow['id'] | null {
+  const mapped = CLOCK_TO_SESSION[clock.id];
+  if (mapped) {
+    return mapped;
   }
+
+  if (clock.id === 'local' && BRAZIL_CLOCK_TIMEZONES.has(clock.timezone)) {
+    return 'brazil';
+  }
+
   return null;
 }
 
-const CLOCK_DISPLAY_ORDER = ['london', 'new_york', 'sydney', 'tokyo'] as const;
+const CLOCK_DISPLAY_ORDER = ['london', 'new_york', 'sydney', 'tokyo', 'hong_kong'] as const;
 const CLOCK_DEFAULTS: Record<(typeof CLOCK_DISPLAY_ORDER)[number], Pick<ClockItem, 'label' | 'timezone'>> = {
   london: { label: 'Londres', timezone: 'Europe/London' },
   new_york: { label: 'Nova York', timezone: 'America/New_York' },
   sydney: { label: 'Sydney', timezone: 'Australia/Sydney' },
-  tokyo: { label: 'Toquio', timezone: 'Asia/Tokyo' }
+  tokyo: { label: 'Toquio', timezone: 'Asia/Tokyo' },
+  hong_kong: { label: 'Hong Kong', timezone: 'Asia/Hong_Kong' }
 };
 
 export const WorldClocks = memo(function WorldClocks({
@@ -116,50 +116,51 @@ export const WorldClocks = memo(function WorldClocks({
     return [primaryClock, ...secondaryClocks];
   }, [baseTimezone, clocks, nowIso, preferences.baseTimezone, preferences.lockBaseTimezone]);
 
-  const activeOverlap =
-    overlaps.find((overlap) => overlap.isActive) ||
-    overlaps.find((overlap) => overlap.sessions.every((id) => activeSessionIds.has(id as SessionWindow['id']))) ||
-    null;
-  const overlapSessionIds = new Set(
-    (activeOverlap?.sessions || []).map((sessionId) => toSessionId(sessionId)).filter(Boolean) as SessionWindow['id'][]
-  );
+  const goldenOverlap = findGoldenOverlap(overlaps);
+  const brazilHighlight = isBrazilClockHighlight(nowIso, overlaps, marketOpen, activeSessionIds.has('brazil'));
 
   const activeSessionTags = Array.from(activeSessionIds).filter(Boolean);
 
   return (
     <div className="space-y-3">
-      {marketOpen && activeOverlap ? (
+      {marketOpen && goldenOverlap ? (
         <div className="rounded-lg border border-warning/60 bg-warning/10 px-3 py-2 text-center text-sm font-medium text-gold">
-          {t(locale, 'world.overlapNow', { label: localizeOperationalText(activeOverlap.label, locale) })}
+          {t(locale, 'world.overlapNow', { label: localizeOperationalText(goldenOverlap.label, locale) })}
         </div>
       ) : null}
 
-      <div className="overflow-x-auto">
-        <div className="grid min-w-[1320px] grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {orderedClocks.map((clock) => {
-          const sessionId = CLOCK_TO_SESSION[clock.id];
+          const sessionId = resolveClockSessionId(clock);
           const isActive = Boolean(marketOpen && sessionId && activeSessionIds.has(sessionId));
-          const isOverlap = Boolean(isActive && sessionId && overlapSessionIds.has(sessionId));
-          const displayLabel = getLocalizedClockLabel(clock.id, clock.label, locale);
+          const isOverlap = Boolean(
+            isActive &&
+              sessionId &&
+              (isSessionInGoldenOverlap(sessionId, goldenOverlap) ||
+                (sessionId === 'brazil' && brazilHighlight))
+          );
+          const displayLabel = localizeClockLabel(clock.id, clock.label, locale);
 
           return (
             <Card
               key={clock.id}
               className={cn(
-                'relative h-full border-border/70 bg-slate-950/65 transition-all duration-200',
+                'relative h-full min-w-0 border-border/70 bg-slate-950/65 transition-all duration-200',
                 !marketOpen && 'opacity-55 saturate-50',
                 isActive && 'border-cyan/70 bg-cyan/10 shadow-[0_0_18px_rgba(34,211,238,0.28)]',
                 isOverlap && 'border-warning/70 bg-warning/10 shadow-[0_0_22px_rgba(245,158,11,0.34)]'
               )}
             >
-              <CardContent className="py-4">
-                <div className="mb-2 flex items-center gap-2 text-mutedForeground">
-                  <Clock3 className={cn('h-4 w-4 text-cyan', isOverlap && 'text-warning')} />
-                  <span className={cn('text-sm tracking-wide', isActive && 'text-slate-200')}>{displayLabel}</span>
+              <CardContent className="px-3 py-3 sm:px-4 sm:py-4">
+                <div className="mb-2 flex min-w-0 items-center gap-2 text-mutedForeground">
+                  <Clock3 className={cn('h-4 w-4 shrink-0 text-cyan', isOverlap && 'text-warning')} />
+                  <span className={cn('truncate text-xs tracking-wide sm:text-sm', isActive && 'text-slate-200')}>
+                    {displayLabel}
+                  </span>
                   {isActive ? (
                     <span
                       className={cn(
-                        'ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+                        'ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide sm:px-2 sm:text-[10px]',
                         isOverlap ? 'bg-warning text-slate-950' : 'bg-cyan text-slate-950'
                       )}
                     >
@@ -169,7 +170,7 @@ export const WorldClocks = memo(function WorldClocks({
                 </div>
                 <div
                   className={cn(
-                    'font-mono text-2xl font-semibold tracking-wide text-slate-100 md:text-3xl',
+                    'font-mono text-xl font-semibold tracking-wide text-slate-100 sm:text-2xl xl:text-3xl',
                     isActive && !isOverlap && 'text-cyan drop-shadow-[0_0_10px_rgba(34,211,238,0.45)]',
                     isOverlap && 'text-warning drop-shadow-[0_0_12px_rgba(245,158,11,0.55)]'
                   )}
@@ -188,7 +189,6 @@ export const WorldClocks = memo(function WorldClocks({
             </Card>
           );
         })}
-        </div>
       </div>
 
       {marketOpen && activeSessionTags.length ? (
@@ -196,16 +196,7 @@ export const WorldClocks = memo(function WorldClocks({
           <span className="uppercase tracking-wide text-mutedForeground">{t(locale, 'world.activeSessions')}</span>
           {activeSessionTags.map((sessionId) => (
             <span key={sessionId} className="rounded-full border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-cyan">
-              {localizeSessionLabel(
-                sessionId === 'sydney'
-                  ? 'Sessao de Sydney'
-                  : sessionId === 'tokyo'
-                    ? 'Sessao Asiatica'
-                    : sessionId === 'london'
-                      ? 'Sessao Europeia'
-                      : 'Sessao Americana',
-                locale
-              )}
+              {localizeSessionId(sessionId, locale)}
             </span>
           ))}
         </div>

@@ -4,12 +4,20 @@ const { BASE_TIMEZONE, FOREX_UTC_CONFIG, SESSION_DEFINITIONS } = require('../typ
 const UTC_ZONE = 'UTC';
 const OVERLAP_DEFINITIONS = [
   { id: 'london_newyork', label: 'Londres + Nova York', a: 'london', b: 'new_york' },
+  { id: 'brazil_newyork', label: 'Brasil + Nova York', a: 'brazil', b: 'new_york' },
+  { id: 'brazil_london', label: 'Brasil + Londres', a: 'brazil', b: 'london' },
   { id: 'tokyo_london', label: 'Toquio + Londres', a: 'tokyo', b: 'london' },
-  { id: 'sydney_tokyo', label: 'Sydney + Toquio', a: 'sydney', b: 'tokyo' }
+  { id: 'hong_kong_london', label: 'Hong Kong + Londres', a: 'hong_kong', b: 'london' },
+  { id: 'sydney_tokyo', label: 'Sydney + Toquio', a: 'sydney', b: 'tokyo' },
+  { id: 'sydney_hong_kong', label: 'Sydney + Hong Kong', a: 'sydney', b: 'hong_kong' },
+  { id: 'sydney_shanghai', label: 'Sydney + Xangai', a: 'sydney', b: 'shanghai' },
+  { id: 'tokyo_hong_kong', label: 'Toquio + Hong Kong', a: 'tokyo', b: 'hong_kong' },
+  { id: 'tokyo_shanghai', label: 'Toquio + Xangai', a: 'tokyo', b: 'shanghai' },
+  { id: 'hong_kong_shanghai', label: 'Hong Kong + Xangai', a: 'hong_kong', b: 'shanghai' }
 ];
-const PRIMARY_SESSION_IDS = new Set(['tokyo', 'london', 'new_york']);
-const CLOSE_SESSION_PRIORITY = ['new_york', 'london', 'tokyo', 'sydney'];
-const OPEN_SESSION_PRIORITY = ['sydney', 'tokyo', 'london', 'new_york'];
+const PRIMARY_SESSION_IDS = new Set(['tokyo', 'hong_kong', 'london', 'new_york']);
+const CLOSE_SESSION_PRIORITY = ['new_york', 'brazil', 'london', 'hong_kong', 'shanghai', 'tokyo', 'sydney'];
+const OPEN_SESSION_PRIORITY = ['sydney', 'tokyo', 'shanghai', 'hong_kong', 'london', 'brazil', 'new_york'];
 
 function parseClock(clock) {
   const [hour, minute] = clock.split(':').map((value) => Number(value));
@@ -152,6 +160,18 @@ function resolveSessionId(sessionName) {
     toquio: 'tokyo',
     sessaoasiatica: 'tokyo',
     asian: 'tokyo',
+    hongkong: 'hong_kong',
+    bolsadehongkong: 'hong_kong',
+    hk50: 'hong_kong',
+    shanghai: 'shanghai',
+    xangai: 'shanghai',
+    bolsadexangai: 'shanghai',
+    china50: 'shanghai',
+    brazil: 'brazil',
+    brasil: 'brazil',
+    bolsadobrasil: 'brazil',
+    b3: 'brazil',
+    ibovespa: 'brazil',
     london: 'london',
     londres: 'london',
     sessaoeuropeia: 'london',
@@ -525,6 +545,7 @@ function getSessionSchedules(referenceNow = undefined, timezone = BASE_TIMEZONE)
       timezone: definition.timezone,
       color: definition.color,
       volatility: definition.volatility,
+      radarEligible: definition.radarEligible !== false,
       openLocal: `${utcConfig.open} UTC`,
       closeLocal: `${utcConfig.close} UTC`,
       isActive: Boolean(picked.activeWindow),

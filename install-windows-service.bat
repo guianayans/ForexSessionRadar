@@ -36,6 +36,9 @@ if errorlevel 1 (
 if not exist "%DATA_DIR%" mkdir "%DATA_DIR%"
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 
+echo [0/6] Parando servico existente (se houver)...
+call :stop_existing_service
+
 echo [1/6] Instalando dependencias (workspaces)...
 call npm ci --no-audit --no-fund
 if errorlevel 1 (
@@ -187,6 +190,27 @@ if errorlevel 1 (
 )
 
 echo [OK] Node.js %NODE_VERSION% pronto.
+exit /b 0
+
+:stop_existing_service
+sc query "%SERVICE_NAME%" >nul 2>&1
+if errorlevel 1 (
+  echo [INFO] Servico "%SERVICE_NAME%" nao existe ainda.
+  exit /b 0
+)
+
+echo [INFO] sc stop %SERVICE_NAME%
+sc stop "%SERVICE_NAME%" >nul 2>&1
+
+where nssm >nul 2>&1
+if not errorlevel 1 (
+  echo [INFO] nssm stop %SERVICE_NAME%
+  nssm stop "%SERVICE_NAME%" >nul 2>&1
+)
+
+echo [INFO] sc query %SERVICE_NAME%
+sc query "%SERVICE_NAME%"
+
 exit /b 0
 
 :install_node20

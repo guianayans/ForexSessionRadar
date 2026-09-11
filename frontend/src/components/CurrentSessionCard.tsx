@@ -22,7 +22,10 @@ function getVolatilitySeries(sessionId: string) {
   const base = {
     sydney: [32, 36, 40, 42, 38, 35],
     tokyo: [35, 38, 41, 45, 42, 39],
+    hong_kong: [36, 40, 44, 46, 43, 40],
+    shanghai: [34, 38, 42, 44, 41, 38],
     london: [55, 62, 70, 68, 64, 60],
+    brazil: [38, 42, 48, 50, 46, 43],
     new_york: [58, 65, 75, 72, 69, 63],
     gold: [70, 78, 88, 84, 80, 77],
     closed: [15, 18, 14, 16, 13, 12]

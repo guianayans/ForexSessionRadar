@@ -13,13 +13,6 @@ const { BASE_TIMEZONE } = require('./types/constants');
 const { createStore } = require('./db/store');
 const { createDashboardRoutes } = require('./routes/dashboardRoutes');
 const { createPreferencesRoutes } = require('./routes/preferencesRoutes');
-const { createPlannerRoutes } = require('./routes/plannerRoutes');
-const { createAssistantRoutes } = require('./routes/assistantRoutes');
-const { createEmailConfigRoutes } = require('./routes/emailConfigRoutes');
-const { createTimelineSnapshotRoutes } = require('./routes/timelineSnapshotRoutes');
-const { createEmailService } = require('./services/emailService');
-const { createTimelineSnapshotService } = require('./services/timelineSnapshotService');
-const { createAlertScheduler } = require('./scheduler/alertScheduler');
 
 loadEnvironment(console);
 try {
@@ -55,11 +48,9 @@ app.use(
     credentials: false
   })
 );
-app.use(express.json({ limit: '12mb' }));
+app.use(express.json({ limit: '2mb' }));
 
 const store = createStore(args.dataDir);
-let emailService = createEmailService({ logger: console });
-const timelineSnapshotService = createTimelineSnapshotService({ logger: console });
 
 function createNowProvider(mockNowIso) {
   if (!mockNowIso) {
@@ -98,47 +89,8 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', service: 'forex-session-radar-backend' });
 });
 
-app.use(
-  '/api',
-  createDashboardRoutes(store, {
-    getNow: nowProvider.getNow,
-    getEmailStatus: () => emailService.getStatus?.() || null
-  })
-);
+app.use('/api', createDashboardRoutes(store, { getNow: nowProvider.getNow }));
 app.use('/api', createPreferencesRoutes(store));
-app.use('/api', createPlannerRoutes(store));
-app.use('/api', createAssistantRoutes(store, { getNow: nowProvider.getNow }));
-app.use('/api', createTimelineSnapshotRoutes({ snapshotService: timelineSnapshotService }));
-app.use(
-  '/api',
-  createEmailConfigRoutes({
-    store,
-    getNow: nowProvider.getNow,
-    getTimelineSnapshot: () => timelineSnapshotService.getSnapshot?.({ maxAgeSeconds: 900 }) || null,
-    toTimelineInlineAttachment: (snapshot, cid) => timelineSnapshotService.toInlineAttachment?.(snapshot, cid) || null,
-    onConfigApplied: () => {
-      emailService = createEmailService({ logger: console });
-      const status = emailService.getStatus?.();
-      if (status?.enabled && status?.configured) {
-        console.log(`[email] Config atualizado: ${status.host}:${status.port}`);
-      } else if (status?.enabled) {
-        console.log(`[email] Config atualizado, mas SMTP ainda pendente: ${status.reason}`);
-      } else {
-        console.log('[email] Config atualizado: envio por e-mail desativado.');
-      }
-    }
-  })
-);
-
-const alertScheduler = createAlertScheduler({
-  store,
-  getNow: nowProvider.getNow,
-  getEmailService: () => emailService,
-  getTimelineSnapshot: () => timelineSnapshotService.getSnapshot?.({ maxAgeSeconds: 900 }) || null,
-  toTimelineInlineAttachment: (snapshot, cid) => timelineSnapshotService.toInlineAttachment?.(snapshot, cid) || null,
-  logger: console
-});
-
 if (hasFrontendBuild) {
   app.use(express.static(frontendDistPath));
   app.get(/^(?!\/api).*/, (_req, res) => {
@@ -202,26 +154,10 @@ const server = app.listen(args.port, args.host, () => {
     console.log(`Simulacao de horario ativa: ${nowProvider.seedIso} (${BASE_TIMEZONE})`);
   }
   console.log(`Persistencia local: ${resolvedDataPath}`);
-  const emailStatus = emailService.getStatus?.();
-  if (emailStatus?.enabled && emailStatus?.configured) {
-    console.log(`[email] SMTP ativo: ${emailStatus.host}:${emailStatus.port} (${emailStatus.secure ? 'secure' : 'starttls'})`);
-    if (emailStatus.from) {
-      console.log(`[email] Remetente whitelabel: ${emailStatus.from}`);
-    }
-    if (emailStatus.defaultRecipient) {
-      console.log(`[email] Destino padrao: ${emailStatus.defaultRecipient}`);
-    }
-  } else if (emailStatus?.enabled) {
-    console.log(`[email] SMTP pendente: ${emailStatus.reason}`);
-  } else {
-    console.log('[email] Envio por e-mail desativado.');
-  }
-  alertScheduler.start();
 });
 
 function shutdown(signal) {
   console.log(`Recebido ${signal}. Encerrando backend...`);
-  alertScheduler.stop();
   server.close(() => process.exit(0));
 }
 

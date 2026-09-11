@@ -1,7 +1,6 @@
 import { memo, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { DateTime } from 'luxon';
-import { TimeOptionButton } from './TimeOptionButton';
 import { localizeSessionLabel, t, type SupportedLocale } from '@/lib/i18n';
 
 interface GoldenWindowPanelProps {
@@ -12,8 +11,6 @@ interface GoldenWindowPanelProps {
   startIso: string;
   endIso: string;
   displayTimezone: string;
-  alarmEnabled: boolean;
-  onToggleAlarm: () => void;
 }
 
 function resolveOverlayLayer() {
@@ -34,7 +31,7 @@ function resolveOverlayLayer() {
   return layer;
 }
 
-function getFixedPanelStyle(anchorX: number, anchorY: number, width: number, height = 230) {
+function getFixedPanelStyle(anchorX: number, anchorY: number, width: number, height = 200) {
   const margin = 12;
   const left = Math.max(margin, Math.min(anchorX - width / 2, window.innerWidth - width - margin));
   const top = Math.max(margin, Math.min(anchorY + 12, window.innerHeight - height - margin));
@@ -48,9 +45,7 @@ export const GoldenWindowPanel = memo(function GoldenWindowPanel({
   anchorY,
   startIso,
   endIso,
-  displayTimezone,
-  alarmEnabled,
-  onToggleAlarm
+  displayTimezone
 }: GoldenWindowPanelProps) {
   const portalTarget = useMemo(() => (typeof document !== 'undefined' ? resolveOverlayLayer() : null), []);
 
@@ -62,7 +57,7 @@ export const GoldenWindowPanel = memo(function GoldenWindowPanel({
     <div
       data-timeline-panel="true"
       className="fixed z-[700] w-72 rounded-lg border border-border/80 bg-[#050d1d]/96 p-3 shadow-[0_14px_35px_rgba(2,10,25,.72)]"
-      style={getFixedPanelStyle(anchorX, anchorY, 288, 230)}
+      style={getFixedPanelStyle(anchorX, anchorY, 288, 200)}
       onMouseDown={(event) => event.stopPropagation()}
       onPointerDown={(event) => event.stopPropagation()}
     >
@@ -78,26 +73,8 @@ export const GoldenWindowPanel = memo(function GoldenWindowPanel({
       <p className="mt-2 text-xs text-slate-200">
         {t(locale, 'timeline.assetsRelevant')}: EUR/USD, XAUUSD, US100.
       </p>
-
-      <div className="mt-3">
-        <TimeOptionButton
-          label={alarmEnabled ? t(locale, 'timeline.disableAlarm') : t(locale, 'timeline.enableAlarm')}
-          selected={alarmEnabled}
-          onClick={onToggleAlarm}
-        />
-      </div>
     </div>,
     portalTarget
-  );
-}, (prevProps, nextProps) => {
-  return (
-    prevProps.open === nextProps.open &&
-    prevProps.anchorX === nextProps.anchorX &&
-    prevProps.anchorY === nextProps.anchorY &&
-    prevProps.startIso === nextProps.startIso &&
-    prevProps.endIso === nextProps.endIso &&
-    prevProps.displayTimezone === nextProps.displayTimezone &&
-    prevProps.alarmEnabled === nextProps.alarmEnabled
   );
 });
 

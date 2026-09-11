@@ -66,6 +66,9 @@ type MessageKey =
   | 'world.closedHint'
   | 'world.session.sydney'
   | 'world.session.tokyo'
+  | 'world.session.hong_kong'
+  | 'world.session.shanghai'
+  | 'world.session.brazil'
   | 'world.session.london'
   | 'world.session.new_york'
   | 'timeline.title'
@@ -187,7 +190,7 @@ type MessageKey =
 type Dictionary = Record<MessageKey, string>;
 
 const PT_BR: Dictionary = {
-  'app.subtitle': 'Painel operacional local para Forex, indices e ouro',
+  'app.subtitle': 'Painel publico de sessoes Forex, overlaps e radar de ativos',
   'loading.dashboard': 'Carregando painel...',
   'error.dashboard': 'Falha ao carregar dashboard.',
   'error.backendUnavailable': 'Backend indisponivel.',
@@ -220,6 +223,9 @@ const PT_BR: Dictionary = {
   'world.closedHint': 'Mercado fechado: relogios sem destaque operacional.',
   'world.session.sydney': 'Sydney',
   'world.session.tokyo': 'Asiatica',
+  'world.session.hong_kong': 'Hong Kong',
+  'world.session.shanghai': 'Xangai',
+  'world.session.brazil': 'Brasil',
   'world.session.london': 'Europeia',
   'world.session.new_york': 'Americana',
   'timeline.title': 'Timeline de Sessoes',
@@ -279,7 +285,7 @@ const PT_BR: Dictionary = {
   'alert.noPending': 'Sem alertas pendentes neste ciclo.',
   'alert.leadMinutes': 'Antecedencia (min)',
   'alert.openSession': 'Abertura de sessao',
-  'alert.overlapStart': 'Inicio do overlap Londres + Nova York',
+  'alert.overlapStart': 'Inicio de overlaps entre sessoes',
   'alert.idealWindowEnd': 'Fim da janela ideal',
   'alert.emailTitle': 'Notificacoes por e-mail',
   'alert.emailEnable': 'Enviar alertas por e-mail',
@@ -342,7 +348,7 @@ const PT_BR: Dictionary = {
 
 const EN_US: Dictionary = {
   ...PT_BR,
-  'app.subtitle': 'Local operational dashboard for Forex, indices and gold',
+  'app.subtitle': 'Public dashboard for Forex sessions, overlaps and asset radar',
   'loading.dashboard': 'Loading dashboard...',
   'error.dashboard': 'Failed to load dashboard.',
   'error.backendUnavailable': 'Backend unavailable.',
@@ -373,7 +379,11 @@ const EN_US: Dictionary = {
   'world.activeBadge': 'Active',
   'world.activeSessions': 'Active sessions:',
   'world.closedHint': 'Market closed: clocks without operational highlight.',
+  'world.session.sydney': 'Sydney',
   'world.session.tokyo': 'Asian',
+  'world.session.hong_kong': 'Hong Kong',
+  'world.session.shanghai': 'Shanghai',
+  'world.session.brazil': 'Brazil',
   'world.session.london': 'European',
   'world.session.new_york': 'American',
   'timeline.title': 'Session Timeline',
@@ -433,7 +443,7 @@ const EN_US: Dictionary = {
   'alert.noPending': 'No pending alerts in this cycle.',
   'alert.leadMinutes': 'Lead time (min)',
   'alert.openSession': 'Session open',
-  'alert.overlapStart': 'London + New York overlap start',
+  'alert.overlapStart': 'Session overlap start',
   'alert.idealWindowEnd': 'Ideal window end',
   'alert.emailTitle': 'Email notifications',
   'alert.emailEnable': 'Send alerts by email',
@@ -496,7 +506,7 @@ const EN_US: Dictionary = {
 
 const ES_ES: Dictionary = {
   ...EN_US,
-  'app.subtitle': 'Panel operativo local para Forex, indices y oro',
+  'app.subtitle': 'Panel publico de sesiones Forex, overlaps y radar de activos',
   'loading.dashboard': 'Cargando panel...',
   'error.dashboard': 'No fue posible cargar el panel.',
   'error.backendUnavailable': 'Backend no disponible.',
@@ -527,6 +537,13 @@ const ES_ES: Dictionary = {
   'world.activeBadge': 'Activa',
   'world.activeSessions': 'Sesiones activas:',
   'world.closedHint': 'Mercado cerrado: relojes sin destaque operativo.',
+  'world.session.sydney': 'Sydney',
+  'world.session.tokyo': 'Asiatica',
+  'world.session.hong_kong': 'Hong Kong',
+  'world.session.shanghai': 'Shanghai',
+  'world.session.brazil': 'Brasil',
+  'world.session.london': 'Europea',
+  'world.session.new_york': 'Americana',
   'timeline.title': 'Linea de Tiempo de Sesiones',
   'timeline.paused': 'Mercado en Pausa',
   'timeline.noOverlap': 'Sin overlap activo',
@@ -576,7 +593,7 @@ const ES_ES: Dictionary = {
   'alert.noPending': 'Sin alertas pendientes en este ciclo.',
   'alert.leadMinutes': 'Anticipacion (min)',
   'alert.openSession': 'Apertura de sesion',
-  'alert.overlapStart': 'Inicio del overlap Londres + Nueva York',
+  'alert.overlapStart': 'Inicio de overlaps entre sesiones',
   'alert.idealWindowEnd': 'Fin de la ventana ideal',
   'alert.emailTitle': 'Notificaciones por correo',
   'alert.emailEnable': 'Enviar alertas por correo',
@@ -648,6 +665,9 @@ export function t(locale: SupportedLocale, key: MessageKey, params: Record<strin
 const SESSION_LABEL_TRANSLATIONS: Record<string, { 'pt-BR': string; 'en-US': string; 'es-ES': string }> = {
   'Sessao de Sydney': { 'pt-BR': 'Sessao de Sydney', 'en-US': 'Sydney Session', 'es-ES': 'Sesion de Sydney' },
   'Sessao Asiatica': { 'pt-BR': 'Sessao Asiatica', 'en-US': 'Asian Session', 'es-ES': 'Sesion Asiatica' },
+  'Bolsa de Hong Kong': { 'pt-BR': 'Bolsa de Hong Kong', 'en-US': 'Hong Kong Exchange', 'es-ES': 'Bolsa de Hong Kong' },
+  'Bolsa de Xangai': { 'pt-BR': 'Bolsa de Xangai', 'en-US': 'Shanghai Exchange', 'es-ES': 'Bolsa de Shanghai' },
+  'Bolsa do Brasil': { 'pt-BR': 'Bolsa do Brasil', 'en-US': 'Brazil Exchange', 'es-ES': 'Bolsa de Brasil' },
   'Sessao Europeia': { 'pt-BR': 'Sessao Europeia', 'en-US': 'European Session', 'es-ES': 'Sesion Europea' },
   'Sessao Americana': { 'pt-BR': 'Sessao Americana', 'en-US': 'American Session', 'es-ES': 'Sesion Americana' },
   'Janela de Ouro': { 'pt-BR': 'Janela de Ouro', 'en-US': 'Golden Window', 'es-ES': 'Ventana Dorada' },
@@ -745,9 +765,21 @@ const OPERATIONAL_TRANSLATIONS: Record<string, { 'pt-BR': string; 'en-US': strin
   'Expansao Europeia': { 'pt-BR': 'Expansao Europeia', 'en-US': 'European expansion', 'es-ES': 'Expansion europea' },
   'Movimento Americano': { 'pt-BR': 'Movimento Americano', 'en-US': 'American move', 'es-ES': 'Movimiento americano' },
   'Range Asiatico': { 'pt-BR': 'Range Asiatico', 'en-US': 'Asian range', 'es-ES': 'Rango asiatico' },
+  'Bolsa de Hong Kong': { 'pt-BR': 'Bolsa de Hong Kong', 'en-US': 'Hong Kong Exchange', 'es-ES': 'Bolsa de Hong Kong' },
+  'Bolsa de Xangai': { 'pt-BR': 'Bolsa de Xangai', 'en-US': 'Shanghai Exchange', 'es-ES': 'Bolsa de Shanghai' },
+  'Bolsa do Brasil': { 'pt-BR': 'Bolsa do Brasil', 'en-US': 'Brazil Exchange', 'es-ES': 'Bolsa de Brasil' },
   Transicao: { 'pt-BR': 'Transicao', 'en-US': 'Transition', 'es-ES': 'Transicion' },
   'Sydney + Toquio': { 'pt-BR': 'Sydney + Toquio', 'en-US': 'Sydney + Tokyo', 'es-ES': 'Sydney + Tokio' },
+  'Sydney + Hong Kong': { 'pt-BR': 'Sydney + Hong Kong', 'en-US': 'Sydney + Hong Kong', 'es-ES': 'Sydney + Hong Kong' },
+  'Sydney + Xangai': { 'pt-BR': 'Sydney + Xangai', 'en-US': 'Sydney + Shanghai', 'es-ES': 'Sydney + Shanghai' },
+  'Toquio + Hong Kong': { 'pt-BR': 'Toquio + Hong Kong', 'en-US': 'Tokyo + Hong Kong', 'es-ES': 'Tokio + Hong Kong' },
+  'Toquio + Xangai': { 'pt-BR': 'Toquio + Xangai', 'en-US': 'Tokyo + Shanghai', 'es-ES': 'Tokio + Shanghai' },
+  'Hong Kong + Xangai': { 'pt-BR': 'Hong Kong + Xangai', 'en-US': 'Hong Kong + Shanghai', 'es-ES': 'Hong Kong + Shanghai' },
   'Toquio + Londres': { 'pt-BR': 'Toquio + Londres', 'en-US': 'Tokyo + London', 'es-ES': 'Tokio + Londres' },
+  'Hong Kong + Londres': { 'pt-BR': 'Hong Kong + Londres', 'en-US': 'Hong Kong + London', 'es-ES': 'Hong Kong + Londres' },
+  'Xangai + Londres': { 'pt-BR': 'Xangai + Londres', 'en-US': 'Shanghai + London', 'es-ES': 'Shanghai + Londres' },
+  'Brasil + Londres': { 'pt-BR': 'Brasil + Londres', 'en-US': 'Brazil + London', 'es-ES': 'Brasil + Londres' },
+  'Brasil + Nova York': { 'pt-BR': 'Brasil + Nova York', 'en-US': 'Brazil + New York', 'es-ES': 'Brasil + Nueva York' },
   'Londres + Nova York': { 'pt-BR': 'Londres + Nova York', 'en-US': 'London + New York', 'es-ES': 'Londres + Nueva York' },
   Abertura: { 'pt-BR': 'Abertura', 'en-US': 'Open', 'es-ES': 'Apertura' },
   Expansao: { 'pt-BR': 'Expansao', 'en-US': 'Expansion', 'es-ES': 'Expansion' },
@@ -768,6 +800,55 @@ const OPERATIONAL_TRANSLATIONS: Record<string, { 'pt-BR': string; 'en-US': strin
   Desenvolvimento: { 'pt-BR': 'Desenvolvimento', 'en-US': 'Development', 'es-ES': 'Desarrollo' },
   'Final da Sessao': { 'pt-BR': 'Final da Sessao', 'en-US': 'Session end', 'es-ES': 'Fin de sesion' },
   'Abertura de Sydney': { 'pt-BR': 'Abertura de Sydney', 'en-US': 'Sydney open', 'es-ES': 'Apertura de Sydney' },
+  'Abertura de Hong Kong': { 'pt-BR': 'Abertura de Hong Kong', 'en-US': 'Hong Kong open', 'es-ES': 'Apertura de Hong Kong' },
+  'Abertura de Xangai': { 'pt-BR': 'Abertura de Xangai', 'en-US': 'Shanghai open', 'es-ES': 'Apertura de Shanghai' },
+  'Abertura do Brasil': { 'pt-BR': 'Abertura do Brasil', 'en-US': 'Brazil open', 'es-ES': 'Apertura de Brasil' },
+  'Meio da Sessao': { 'pt-BR': 'Meio da Sessao', 'en-US': 'Mid-session', 'es-ES': 'Mitad de sesion' },
+  'Formacao inicial do HK50 e ajuste de preco': {
+    'pt-BR': 'Formacao inicial do HK50 e ajuste de preco',
+    'en-US': 'Initial HK50 formation and price adjustment',
+    'es-ES': 'Formacion inicial del HK50 y ajuste de precio'
+  },
+  'Formacao inicial do CHINA50 e ajuste de preco': {
+    'pt-BR': 'Formacao inicial do CHINA50 e ajuste de preco',
+    'en-US': 'Initial CHINA50 formation and price adjustment',
+    'es-ES': 'Formacion inicial del CHINA50 y ajuste de precio'
+  },
+  'Formacao inicial do IBOVESPA e ajuste de preco': {
+    'pt-BR': 'Formacao inicial do IBOVESPA e ajuste de preco',
+    'en-US': 'Initial IBOVESPA formation and price adjustment',
+    'es-ES': 'Formacion inicial del IBOVESPA y ajuste de precio'
+  },
+  'Fluxo direcional do indice e pares correlacionados': {
+    'pt-BR': 'Fluxo direcional do indice e pares correlacionados',
+    'en-US': 'Directional index flow and correlated pairs',
+    'es-ES': 'Flujo direccional del indice y pares correlacionados'
+  },
+  'Continuidade tecnica com pullbacks': {
+    'pt-BR': 'Continuidade tecnica com pullbacks',
+    'en-US': 'Technical continuation with pullbacks',
+    'es-ES': 'Continuidad tecnica con pullbacks'
+  },
+  'Desaceleracao antes do fechamento da bolsa': {
+    'pt-BR': 'Desaceleracao antes do fechamento da bolsa',
+    'en-US': 'Deceleration before exchange close',
+    'es-ES': 'Desaceleracion antes del cierre de la bolsa'
+  },
+  'Fluxo do indice HK50 e pares asiaticos correlacionados': {
+    'pt-BR': 'Fluxo do indice HK50 e pares asiaticos correlacionados',
+    'en-US': 'HK50 index flow and correlated Asian pairs',
+    'es-ES': 'Flujo del indice HK50 y pares asiaticos correlacionados'
+  },
+  'Fluxo do CHINA50 e pares asiaticos correlacionados': {
+    'pt-BR': 'Fluxo do CHINA50 e pares asiaticos correlacionados',
+    'en-US': 'CHINA50 index flow and correlated Asian pairs',
+    'es-ES': 'Flujo del CHINA50 y pares asiaticos correlacionados'
+  },
+  'Fluxo do IBOVESPA e pares locais correlacionados': {
+    'pt-BR': 'Fluxo do IBOVESPA e pares locais correlacionados',
+    'en-US': 'IBOVESPA index flow and correlated local pairs',
+    'es-ES': 'Flujo del IBOVESPA y pares locales correlacionados'
+  },
   'Formacao de Faixa': { 'pt-BR': 'Formacao de Faixa', 'en-US': 'Range formation', 'es-ES': 'Formacion de rango' },
   'Transicao para Asia': { 'pt-BR': 'Transicao para Asia', 'en-US': 'Transition to Asia', 'es-ES': 'Transicion a Asia' },
   'Inicio da Janela': { 'pt-BR': 'Inicio da Janela', 'en-US': 'Window start', 'es-ES': 'Inicio de la ventana' },
@@ -965,4 +1046,42 @@ export function localizeEventTitle(title: string, locale: SupportedLocale): stri
   }
 
   return localizeOperationalText(title, locale);
+}
+
+type SessionId = 'sydney' | 'tokyo' | 'hong_kong' | 'shanghai' | 'london' | 'brazil' | 'new_york';
+
+const SESSION_ID_LABELS: Record<SessionId, string> = {
+  sydney: 'Sessao de Sydney',
+  tokyo: 'Sessao Asiatica',
+  hong_kong: 'Bolsa de Hong Kong',
+  shanghai: 'Bolsa de Xangai',
+  london: 'Sessao Europeia',
+  brazil: 'Bolsa do Brasil',
+  new_york: 'Sessao Americana'
+};
+
+export function localizeSessionId(sessionId: SessionId, locale: SupportedLocale): string {
+  return localizeSessionLabel(SESSION_ID_LABELS[sessionId], locale);
+}
+
+export function localizeClockLabel(clockId: string, fallback: string, locale: SupportedLocale): string {
+  if (clockId === 'local') {
+    return fallback;
+  }
+  if (clockId === 'london') {
+    return locale === 'en-US' ? 'London' : 'Londres';
+  }
+  if (clockId === 'new_york') {
+    return locale === 'pt-BR' ? 'Nova York' : 'New York';
+  }
+  if (clockId === 'sydney') {
+    return 'Sydney';
+  }
+  if (clockId === 'tokyo') {
+    return locale === 'en-US' ? 'Tokyo' : locale === 'es-ES' ? 'Tokio' : 'Toquio';
+  }
+  if (clockId === 'hong_kong') {
+    return t(locale, 'world.session.hong_kong');
+  }
+  return fallback;
 }

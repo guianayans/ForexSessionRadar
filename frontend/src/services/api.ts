@@ -1,4 +1,5 @@
-import type { AssistantHistoryMessage, AssistantReply, DashboardPayload, Planner, Preferences } from '@/types/dashboard';
+import { DEFAULT_PLANNER, resolvePlannerForBrowser } from '@/lib/planner-storage';
+import type { DashboardPayload, Preferences } from '@/types/dashboard';
 import { detectBrowserTimezone, readStoredTimezoneSelection } from '@/lib/timezone-city-options';
 import { resolveEffectiveLocale } from '@/lib/locale-selection';
 
@@ -141,27 +142,9 @@ function normalizeDashboardPayload(payload: Partial<DashboardPayload>): Dashboar
       message: payload.radar?.message
     },
     upcomingEvents: Array.isArray(payload.upcomingEvents) ? payload.upcomingEvents : [],
-    nextAlert: payload.nextAlert || null,
-    email: payload.email
-      ? {
-          enabled: Boolean(payload.email.enabled),
-          configured: Boolean(payload.email.configured),
-          reason: payload.email.reason || null,
-          from: payload.email.from || null,
-          defaultRecipient: payload.email.defaultRecipient || null
-        }
-      : null,
     preferences: {
       baseTimezone: fallbackBaseTimezone,
       lockBaseTimezone: fallbackLock,
-      alertLeadMinutes: 15,
-      alertOnSessionOpen: true,
-      alertOnOverlapStart: true,
-      alertOnIdealWindowEnd: true,
-      emailNotificationsEnabled: false,
-      emailAddress: '',
-      sessionAlarms: {},
-      eventAlarms: {},
       ...payloadPreferences,
       ...(storedTimezone.lock && storedTimezone.timezone
         ? {
@@ -170,12 +153,7 @@ function normalizeDashboardPayload(payload: Partial<DashboardPayload>): Dashboar
           }
         : {})
     },
-    planner: payload.planner || {
-      checklist: [],
-      favorites: [],
-      notes: '',
-      lockoutEnabled: false
-    }
+    planner: resolvePlannerForBrowser(payload.planner || DEFAULT_PLANNER)
   };
 }
 
@@ -191,74 +169,3 @@ export async function updatePreferences(payload: Partial<Preferences>) {
   });
 }
 
-export async function updatePlanner(payload: Partial<Planner>) {
-  return request<Planner>('/api/planner', {
-    method: 'PUT',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function askAssistant(question: string, apiKey?: string, history?: AssistantHistoryMessage[]) {
-  return request<AssistantReply>('/api/assistant/query', {
-    method: 'POST',
-    body: JSON.stringify({ question, apiKey, history })
-  });
-}
-
-export interface EmailConfigPayload {
-  enabled: boolean;
-  smtpHost: string;
-  smtpPort: number;
-  smtpSecure: boolean;
-  smtpUser: string;
-  smtpPass: string;
-  smtpFrom: string;
-  whitelabelFrom: string;
-  defaultTo: string;
-  envPath?: string;
-}
-
-export interface EmailConfigTestResult {
-  ok: boolean;
-  message: string;
-  messageId?: string | null;
-}
-
-export interface TimelineSnapshotPayload {
-  imageDataUrl: string;
-  capturedAtIso?: string;
-  timezone?: string;
-  locale?: string;
-}
-
-export interface TimelineSnapshotResult {
-  ok: boolean;
-  capturedAtIso: string;
-  sizeBytes: number;
-  mimeType: string;
-}
-
-export async function fetchEmailConfig() {
-  return request<EmailConfigPayload>('/api/email-config');
-}
-
-export async function updateEmailConfig(payload: Partial<EmailConfigPayload>) {
-  return request<EmailConfigPayload>('/api/email-config', {
-    method: 'PUT',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function testEmailConfig(payload: Partial<EmailConfigPayload> & { testTo?: string }) {
-  return request<EmailConfigTestResult>('/api/email-config/test', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function uploadTimelineSnapshot(payload: TimelineSnapshotPayload) {
-  return request<TimelineSnapshotResult>('/api/timeline-snapshot', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}

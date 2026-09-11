@@ -1,7 +1,8 @@
 import { memo, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Radar } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
+import { AppLogo } from '@/components/AppLogo';
 import { DateTime } from 'luxon';
-import { useAlertNotifications } from '@/hooks/useAlertNotifications';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useLiveNow } from '@/hooks/useLiveNow';
 import {
@@ -19,11 +20,8 @@ import {
   resolveEffectiveLocale
 } from '@/lib/locale-selection';
 import { formatCountdown } from '@/lib/utils';
-import { AlertCard } from '@/components/AlertCard';
 import { AssetRadar } from '@/components/AssetRadar';
 import { CurrentSessionCard } from '@/components/CurrentSessionCard';
-import { EmailConfigModal } from '@/components/EmailConfigModal';
-import { FloatingChatAssistant } from '@/components/FloatingChatAssistant';
 import { OperationalPlanner } from '@/components/OperationalPlanner';
 import { SessionPhaseCard } from '@/components/SessionPhaseCard';
 import { SessionTimeline } from '@/components/SessionTimeline';
@@ -279,10 +277,7 @@ const LanguageMenu = memo(function LanguageMenu({
 });
 
 export function DashboardPage() {
-  const { data, loading, error, reload, savePlanner, savePreferences, queryAssistant } = useDashboardData();
-  const [emailConfigOpen, setEmailConfigOpen] = useState(false);
-
-  useAlertNotifications(data?.nextAlert ?? null);
+  const { data, loading, error, savePlanner, savePreferences } = useDashboardData();
 
   const fallbackTimezone = useMemo(() => {
     const storedTimezone = readStoredTimezoneSelection();
@@ -322,9 +317,9 @@ export function DashboardPage() {
         <header className="rounded-xl border border-border/80 bg-[linear-gradient(135deg,_rgba(11,35,75,.95),_rgba(7,14,30,.96)_55%,_rgba(45,28,12,.85))] px-4 py-4 shadow-panel">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-full border border-cyan/60 bg-cyan/10 p-2">
-                <Radar className="h-6 w-6 text-cyan" />
-              </div>
+              <Link to="/" className="block transition hover:opacity-90" title="Voltar ao início">
+                <AppLogo size={44} showGlow />
+              </Link>
               <div>
                 <h1 className="text-2xl font-semibold tracking-wide text-slate-50">Forex Session Radar</h1>
                 <p className="text-sm text-slate-300">{t(locale, 'app.subtitle')}</p>
@@ -379,14 +374,12 @@ export function DashboardPage() {
             isPaused={data.timeline.isPaused}
             marketState={data.marketState}
             currentSession={data.currentSession}
-            preferences={data.preferences}
             upcomingEvents={data.upcomingEvents}
-            onUpdatePreferences={savePreferences}
           />
         </section>
 
         <section className="grid flex-1 grid-cols-1 gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-4">
+          <div className="xl:col-span-5">
             <CurrentSessionCard
               session={data.currentSession}
               marketState={data.marketState}
@@ -397,30 +390,10 @@ export function DashboardPage() {
               locale={locale}
             />
           </div>
-          <div className="xl:col-span-5">
+          <div className="xl:col-span-4">
             <AssetRadar radar={data.radar} marketOpen={data.marketState.isOpen} locale={locale} />
           </div>
           <div className="xl:col-span-3">
-            <AlertCard
-              nextAlert={data.nextAlert}
-              emailStatus={data.email || null}
-              preferences={data.preferences}
-              seedNowIso={data.nowIso}
-              baseTimezone={data.baseTimezone}
-              locale={locale}
-              marketOpen={data.marketState.isOpen}
-              marketState={data.marketState}
-              onOpenEmailConfig={() => setEmailConfigOpen(true)}
-              onUpdatePreferences={savePreferences}
-            />
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-8">
-            <OperationalPlanner planner={data.planner} locale={locale} onSavePlanner={savePlanner} />
-          </div>
-          <div className="xl:col-span-4">
             <SessionPhaseCard
               session={data.currentSession}
               marketState={data.marketState}
@@ -432,18 +405,11 @@ export function DashboardPage() {
             />
           </div>
         </section>
-      </div>
 
-      <FloatingChatAssistant dashboard={data} locale={locale} onAsk={queryAssistant} />
-      <EmailConfigModal
-        open={emailConfigOpen}
-        locale={locale}
-        prefillEmail={data.preferences.emailAddress || ''}
-        onClose={() => setEmailConfigOpen(false)}
-        onSaved={() => {
-          void reload();
-        }}
-      />
+        <section className="animate-fadeUp">
+          <OperationalPlanner planner={data.planner} locale={locale} onSavePlanner={savePlanner} />
+        </section>
+      </div>
     </main>
   );
 }

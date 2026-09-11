@@ -1,7 +1,6 @@
 import { memo, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { SessionActionMenu } from './SessionActionMenu';
-import type { SupportedLocale } from '@/lib/i18n';
+import { localizeSessionLabel, type SupportedLocale } from '@/lib/i18n';
 
 interface SessionPanelProps {
   locale: SupportedLocale;
@@ -10,14 +9,6 @@ interface SessionPanelProps {
   anchorY: number;
   sessionLabel: string;
   details: string;
-  openEnabled: boolean;
-  closeEnabled: boolean;
-  favoriteEnabled: boolean;
-  beforeMinutes: Array<5 | 10 | 15 | 30>;
-  onToggleOpen: (checked: boolean) => void;
-  onToggleClose: (checked: boolean) => void;
-  onToggleFavorite: (checked: boolean) => void;
-  onToggleLead: (minutes: 5 | 10 | 15 | 30) => void;
 }
 
 function resolveOverlayRoot() {
@@ -28,7 +19,6 @@ function resolveOverlayRoot() {
     document.body.appendChild(root);
   }
 
-  // Camada dedicada do SessionPanel: garante portal independente do chat.
   let layer = document.getElementById('overlay-layer-session-panel');
   if (!layer) {
     layer = document.createElement('div');
@@ -39,7 +29,7 @@ function resolveOverlayRoot() {
   return layer;
 }
 
-function getFixedPanelStyle(anchorX: number, anchorY: number, width: number, height = 230) {
+function getFixedPanelStyle(anchorX: number, anchorY: number, width: number, height = 160) {
   const margin = 12;
   const left = Math.max(margin, Math.min(anchorX - width / 2, window.innerWidth - width - margin));
   const top = Math.max(margin, Math.min(anchorY + 12, window.innerHeight - height - margin));
@@ -52,15 +42,7 @@ export const SessionPanel = memo(function SessionPanel({
   anchorX,
   anchorY,
   sessionLabel,
-  details,
-  openEnabled,
-  closeEnabled,
-  favoriteEnabled,
-  beforeMinutes,
-  onToggleOpen,
-  onToggleClose,
-  onToggleFavorite,
-  onToggleLead
+  details
 }: SessionPanelProps) {
   const overlayRoot = useMemo(() => (typeof document !== 'undefined' ? resolveOverlayRoot() : null), []);
 
@@ -68,28 +50,16 @@ export const SessionPanel = memo(function SessionPanel({
     return null;
   }
 
-  // Portal: renderiza fora da timeline para evitar conflito com drag/scroll do rail.
   return createPortal(
     <div
       data-timeline-panel="true"
-      className="fixed z-[700] pointer-events-auto"
-      style={getFixedPanelStyle(anchorX, anchorY, 288, 280)}
+      className="fixed z-[700] w-72 rounded-lg border border-border/80 bg-[#050d1d]/96 p-3 shadow-[0_14px_35px_rgba(2,10,25,.72)]"
+      style={getFixedPanelStyle(anchorX, anchorY, 288, 160)}
       onMouseDown={(event) => event.stopPropagation()}
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <SessionActionMenu
-        locale={locale}
-        sessionLabel={sessionLabel}
-        details={details}
-        openEnabled={openEnabled}
-        closeEnabled={closeEnabled}
-        favoriteEnabled={favoriteEnabled}
-        beforeMinutes={beforeMinutes}
-        onToggleOpen={onToggleOpen}
-        onToggleClose={onToggleClose}
-        onToggleFavorite={onToggleFavorite}
-        onToggleLead={onToggleLead}
-      />
+      <p className="text-sm font-semibold text-slate-100">{localizeSessionLabel(sessionLabel, locale)}</p>
+      <p className="mt-2 text-xs text-slate-200">{details}</p>
     </div>,
     overlayRoot
   );

@@ -14,7 +14,7 @@ function normalizeSeed(seedIso?: string) {
   return parsed.toISO() || new Date().toISOString();
 }
 
-export function useLiveNow(seedIso?: string, tickMs = 1000) {
+export function useLiveNow(seedIso?: string, tickMs = 1000, enabled = true) {
   const [nowIso, setNowIso] = useState(() => normalizeSeed(seedIso));
 
   useEffect(() => {
@@ -22,6 +22,10 @@ export function useLiveNow(seedIso?: string, tickMs = 1000) {
   }, [seedIso]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const timer = window.setInterval(() => {
       setNowIso((current) => {
         const parsed = DateTime.fromISO(current, { setZone: true });
@@ -33,7 +37,7 @@ export function useLiveNow(seedIso?: string, tickMs = 1000) {
     }, tickMs);
 
     return () => window.clearInterval(timer);
-  }, [seedIso, tickMs]);
+  }, [enabled, seedIso, tickMs]);
 
   return nowIso;
 }

@@ -1,7 +1,7 @@
 <a href="https://trendshift.io/repositories/19809" target="_blank"><img src="https://trendshift.io/api/badge/repositories/19809" alt="abhigyanpatwari%2FGitNexus | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 # Forex Session Radar
 
-Aplicativo desktop para monitoramento operacional de sessoes Forex, overlap, alertas e assistente inteligente local/OpenAI.
+Aplicativo para monitoramento operacional de sessoes Forex, overlaps e radar de ativos (versao publica).
 
 ![Forex Session Radar Dashboard](./dashboard.png) 
 
@@ -20,11 +20,9 @@ O projeto roda em arquitetura local:
 - Timeline de sessoes com overlap e estado de mercado
 - Ajuste de timezone com modo automatico e modo travado por cidade
 - Logica de DST por timezone real
-- Alertas com notificacoes locais
-- Alertas por e-mail (SMTP autenticado)
 - Radar de ativos por contexto de sessao
-- Planner operacional
-- Assistente inteligente com fallback local e suporte OpenAI por API Key
+- Planner operacional (notas e checklist por navegador, em localStorage)
+- Fuso horario e idioma configuraveis
 
 ## Estrutura do Projeto
 
@@ -92,35 +90,30 @@ Saidas principais:
 
 - `GET /api/health`
 - `GET /api/dashboard`
-- `PUT /api/preferences`
-- `PUT /api/planner`
-- `POST /api/assistant/query`
+- `PUT /api/preferences` (fuso horario)
+- Planner: salvo no `localStorage` do navegador (nao compartilhado entre usuarios)
 
-## Configuracao OpenAI (Opcional)
+## Rotas do site
 
-No chat, configure sua API key, ou envie no backend (`OPENAI_API_KEY`) para respostas via OpenAI.
+| URL | Conteudo |
+|-----|----------|
+| `/` | Landing page (apresentacao) |
+| `/app` | Dashboard operacional |
+| `/dashboard` | Redireciona para `/app` |
 
-## Configuracao de E-mail (SMTP)
+## Deploy publico
 
-O envio de alertas por e-mail roda no backend e fica desativado por padrao.
+O backend serve o build do frontend na mesma porta (`4783` por padrao). Para expor na internet:
 
-### Variaveis de ambiente
+1. Rode `npm run build:frontend`
+2. Inicie o backend com `--host 0.0.0.0`
+3. Coloque um reverse proxy (nginx/Caddy) com HTTPS na frente
 
-```bash
-EMAIL_NOTIFICATIONS_ENABLED=true
-SMTP_HOST=smtp.seuprovedor.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=seu_usuario
-SMTP_PASS=sua_senha_ou_app_password
-SMTP_FROM="Forex Session Radar <alertas@seu-dominio.com>"
-EMAIL_WHITELABEL_FROM="Radar FX <alerts@seu-dominio.com>"
-EMAIL_DEFAULT_TO="destino-padrao@seu-dominio.com"
-```
+Nao e necessario configurar SMTP, OpenAI ou chaves de notificacao.
 
 ### Onde colocar o arquivo de configuracao (macOS)
 
-O backend agora carrega automaticamente variaveis de ambiente destes caminhos (primeiro encontrado):
+O backend carrega variaveis de ambiente destes caminhos (primeiro encontrado):
 
 1. `.env` na raiz do projeto
 2. `backend/.env` na raiz do projeto

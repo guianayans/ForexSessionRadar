@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 const { getSessionScheduleByDate, getSessionOverlapsByDate } = require('../src/services/marketTimeService');
 
 const DATES = ['2026-02-15', '2026-03-15', '2026-04-10', '2026-08-15', '2026-10-30', '2026-11-10'];
-const SESSIONS = ['sydney', 'tokyo', 'london', 'new_york'];
+const SESSIONS = ['sydney', 'tokyo', 'hong_kong', 'shanghai', 'london', 'brazil', 'new_york'];
 
 for (const date of DATES) {
   const reference = DateTime.fromISO(`${date}T12:00:00`, { zone: 'America/Sao_Paulo' });
@@ -29,6 +29,8 @@ for (const date of DATES) {
   const londonNy = overlaps.find((item) => item.id === 'london_newyork');
   const tokyoLondon = overlaps.find((item) => item.id === 'tokyo_london');
   const sydneyTokyo = overlaps.find((item) => item.id === 'sydney_tokyo');
+  const tokyoHongKong = overlaps.find((item) => item.id === 'tokyo_hong_kong');
+  const hongKongLondon = overlaps.find((item) => item.id === 'hong_kong_london');
 
   console.log(
     `Overlap Londres+NY : ${londonNy ? `${londonNy.startLabel} -> ${londonNy.endLabel}` : 'Sem overlap nessa referencia'}`
@@ -38,5 +40,11 @@ for (const date of DATES) {
   );
   console.log(
     `Overlap Sydney+Toquio : ${sydneyTokyo ? `${sydneyTokyo.startLabel} -> ${sydneyTokyo.endLabel}` : 'Sem overlap nessa referencia'}`
+  );
+  console.log(
+    `Overlap Toquio+HK    : ${tokyoHongKong ? `${tokyoHongKong.startLabel} -> ${tokyoHongKong.endLabel}` : 'Sem overlap nessa referencia'}`
+  );
+  console.log(
+    `Overlap HK+Londres   : ${hongKongLondon ? `${hongKongLondon.startLabel} -> ${hongKongLondon.endLabel}` : 'Sem overlap nessa referencia'}`
   );
 }

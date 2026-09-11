@@ -69,6 +69,33 @@ function getPhaseMap(sessionId: string, locale: SupportedLocale): PhaseDefinitio
     ], locale);
   }
 
+  if (sessionId === 'hong_kong') {
+    return localizePhaseList([
+      { name: 'Abertura de Hong Kong', untilPercent: 0.2, behavior: 'Formacao inicial do HK50 e ajuste de preco', liquidity: 'Moderada' },
+      { name: 'Desenvolvimento', untilPercent: 0.55, behavior: 'Fluxo direcional do indice e pares correlacionados', liquidity: 'Moderada' },
+      { name: 'Meio da Sessao', untilPercent: 0.8, behavior: 'Continuidade tecnica com pullbacks', liquidity: 'Moderada' },
+      { name: 'Encerramento', untilPercent: 1, behavior: 'Desaceleracao antes do fechamento da bolsa', liquidity: 'Baixa a moderada' }
+    ], locale);
+  }
+
+  if (sessionId === 'shanghai') {
+    return localizePhaseList([
+      { name: 'Abertura de Xangai', untilPercent: 0.2, behavior: 'Formacao inicial do CHINA50 e ajuste de preco', liquidity: 'Moderada' },
+      { name: 'Desenvolvimento', untilPercent: 0.55, behavior: 'Fluxo direcional do indice e pares correlacionados', liquidity: 'Moderada' },
+      { name: 'Meio da Sessao', untilPercent: 0.8, behavior: 'Continuidade tecnica com pullbacks', liquidity: 'Moderada' },
+      { name: 'Encerramento', untilPercent: 1, behavior: 'Desaceleracao antes do fechamento da bolsa', liquidity: 'Baixa a moderada' }
+    ], locale);
+  }
+
+  if (sessionId === 'brazil') {
+    return localizePhaseList([
+      { name: 'Abertura do Brasil', untilPercent: 0.2, behavior: 'Formacao inicial do IBOVESPA e ajuste de preco', liquidity: 'Moderada' },
+      { name: 'Desenvolvimento', untilPercent: 0.55, behavior: 'Fluxo direcional do indice e pares correlacionados', liquidity: 'Moderada' },
+      { name: 'Meio da Sessao', untilPercent: 0.8, behavior: 'Continuidade tecnica com pullbacks', liquidity: 'Moderada' },
+      { name: 'Encerramento', untilPercent: 1, behavior: 'Desaceleracao antes do fechamento da bolsa', liquidity: 'Baixa a moderada' }
+    ], locale);
+  }
+
   if (sessionId === 'sydney') {
     return localizePhaseList([
       { name: 'Abertura de Sydney', untilPercent: 0.2, behavior: 'Ajustes iniciais e precificacao de risco', liquidity: 'Moderada' },

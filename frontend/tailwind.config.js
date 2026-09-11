@@ -13,7 +13,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'monospace']
+        mono: ['"IBM Plex Mono"', 'monospace'],
+        'landing-display': ['"Instrument Serif"', 'Georgia', 'serif']
       },
       colors: {
         background: 'hsl(var(--background))',

@@ -6,7 +6,7 @@ export interface ClockItem {
 }
 
 export interface SessionWindow {
-  id: 'sydney' | 'tokyo' | 'london' | 'new_york';
+  id: 'sydney' | 'tokyo' | 'hong_kong' | 'shanghai' | 'london' | 'brazil' | 'new_york';
   label: string;
   shortLabel: string;
   color: string;
@@ -26,6 +26,7 @@ export interface SessionWindow {
   currentOffset: string;
   offsetMinutes: number;
   isActive: boolean;
+  radarEligible?: boolean;
   windows?: Array<{
     id: string;
     startIso: string;
@@ -88,40 +89,9 @@ export interface UpcomingEvent {
   sessionId?: SessionWindow['id'];
 }
 
-export interface NextAlert {
-  id: string;
-  title: string;
-  type: UpcomingEvent['type'];
-  leadMinutes: number;
-  eventTimeIso: string;
-  triggerTimeIso: string;
-  countdownSeconds: number;
-}
-
-export interface SessionAlarmConfig {
-  open?: boolean;
-  close?: boolean;
-  favorite?: boolean;
-  beforeMinutes?: Array<5 | 10 | 15 | 30>;
-}
-
-export interface EventAlarmConfig {
-  enabled?: boolean;
-  leadMinutes?: 5 | 10 | 15 | 30;
-  beforeMinutes?: Array<5 | 10 | 15 | 30>;
-}
-
 export interface Preferences {
   baseTimezone: string;
   lockBaseTimezone?: boolean;
-  alertLeadMinutes: 5 | 10 | 15 | 30;
-  alertOnSessionOpen: boolean;
-  alertOnOverlapStart: boolean;
-  alertOnIdealWindowEnd: boolean;
-  emailNotificationsEnabled?: boolean;
-  emailAddress?: string;
-  sessionAlarms?: Partial<Record<SessionWindow['id'], SessionAlarmConfig>>;
-  eventAlarms?: Record<string, EventAlarmConfig>;
 }
 
 export interface ChecklistItem {
@@ -153,26 +123,8 @@ export interface DashboardPayload {
   nextSession: NextSession | null;
   radar: Radar;
   upcomingEvents: UpcomingEvent[];
-  nextAlert: NextAlert | null;
-  email?: {
-    enabled: boolean;
-    configured: boolean;
-    reason?: string | null;
-    from?: string | null;
-    defaultRecipient?: string | null;
-  } | null;
   preferences: Preferences;
   planner: Planner;
-}
-
-export interface AssistantReply {
-  answer: string;
-  confidence: 'low' | 'medium' | 'high';
-  provider: 'local' | 'openai';
-  context: {
-    session: string;
-    nowIso: string;
-  };
 }
 
 export interface MarketState {
@@ -187,9 +139,4 @@ export interface MarketState {
   countdownToCloseSeconds: number;
   nextSessionLabel: string;
   nextSessionIso: string | null;
-}
-
-export interface AssistantHistoryMessage {
-  role: 'user' | 'assistant';
-  text: string;
 }

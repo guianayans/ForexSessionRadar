@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -109,4 +109,22 @@ body {
 .time-button::before,
 .time-button::after {
   display: none !important;
+}
+
+.font-landing-display {
+  font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.landing-page {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(26, 99, 171, 0.28), transparent 55%),
+    radial-gradient(circle at 90% 20%, rgba(180, 120, 40, 0.12), transparent 40%),
+    linear-gradient(180deg, #040a14 0%, #060d18 45%, #050810 100%);
+}
+
+.landing-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
